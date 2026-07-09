@@ -16,6 +16,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.9.1/mammoth.browser.min.js"></script>
 
 <style>
   :root{
@@ -568,11 +569,11 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     <section id="view-upload" class="view">
       <p class="eyebrow">Contribute</p>
       <h2 class="section-title">Upload a policy or SOP</h2>
-      <p class="intro">Most policies are PDFs — upload the file and we'll pull the text out automatically, format it into a proper policy page, and make it fully searchable. No PDF? Just paste or type the text directly instead.</p>
+      <p class="intro">Upload a PDF or Word (.docx) file and we'll pull the text out automatically, format it into a proper policy page, and make it fully searchable. No file to hand? Just paste or type the text directly instead.</p>
 
       <form class="card-form" id="uploadForm">
         <label for="up-file">Policy file
-          <span class="hint">PDF works best (text is extracted and formatted automatically). Word docs and images can be attached too, but won't be auto-read — add the text below for those.</span>
+          <span class="hint">PDF and .docx are read and formatted automatically. Older .doc and images can be attached too, but won't be auto-read — add the text below for those.</span>
           <input type="file" id="up-file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg">
         </label>
         <p class="hint" id="pdfStatus" style="margin-top:6px"></p>
@@ -684,6 +685,7 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <a id="modalFileLink" href="#" target="_blank" rel="noopener" style="display:none" class="wah-button wah-button--secondary wah-button--small">Download attachment</a>
         <button class="wah-button wah-button--secondary wah-button--small" id="modalPrint">Print policy</button>
+        <button class="wah-button wah-button--secondary wah-button--small admin-only" id="modalReextract" style="display:none">Re-extract text from file</button>
         <button class="wah-button wah-button--secondary wah-button--small admin-only" id="modalDelete" style="display:none;border-color:#c0392b;color:#8a2f22">Delete policy</button>
       </div>
       <button class="wah-button wah-button--small" id="modalClose">Close</button>
@@ -1012,14 +1014,61 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     document.getElementById("modalMeta").textContent = "Added " + formatDate(p.created_at) + (p.uploaded_by ? " by " + p.uploaded_by : "");
     var bodyEl = document.getElementById("modalBody");
     var formatted = formatPolicyHtml(p.content, p.title);
-    bodyEl.innerHTML = formatted || ('<p class="doc-fallback">' + escapeHtml(p.content || "") + "</p>");
+    if (formatted){
+      bodyEl.innerHTML = formatted;
+    } else if (p.content) {
+      bodyEl.innerHTML = '<p class="doc-fallback">' + escapeHtml(p.content) + "</p>";
+    } else if (p.file_url) {
+      bodyEl.innerHTML = '<p style="color:var(--grey);font-style:italic">No text has been pulled from the attached file yet' + (isAdmin() ? ' — use "Re-extract text from file" below.' : ' — an admin can fix this from here.') + '</p>';
+    } else {
+      bodyEl.innerHTML = '<p style="color:var(--grey);font-style:italic">No text added for this policy yet.</p>';
+    }
     var link = document.getElementById("modalFileLink");
     if (p.file_url){ link.style.display = "inline-flex"; link.href = p.file_url; }
     else { link.style.display = "none"; }
     var delBtn = document.getElementById("modalDelete");
     delBtn.setAttribute("data-id", p.id);
     delBtn.style.display = isAdmin() ? "inline-flex" : "none";
+    var reBtn = document.getElementById("modalReextract");
+    reBtn.setAttribute("data-id", p.id);
+    reBtn.style.display = (isAdmin() && p.file_url) ? "inline-flex" : "none";
     document.getElementById("modalBackdrop").classList.add("show");
+  }
+
+  async function reextractFromModal(){
+    var btn = document.getElementById("modalReextract");
+    var id = btn.getAttribute("data-id");
+    var p = policies.find(function(x){ return String(x.id) === String(id); });
+    if (!p || !p.file_url) return;
+
+    var kind = fileKind(p.file_name || p.file_url);
+    if (!kind){
+      alert("This attachment isn't a PDF or .docx, so it can't be auto-read. Paste the text in manually instead.");
+      return;
+    }
+
+    var originalLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "Reading file…";
+    try{
+      var res = await fetch(p.file_url);
+      if (!res.ok) throw new Error("Couldn't download the attached file (" + res.status + ")");
+      var buffer = await res.arrayBuffer();
+      var text = kind === "pdf" ? await extractPdfTextFromBuffer(buffer) : await extractDocxTextFromBuffer(buffer);
+      if (!text){
+        alert("Couldn't find any text in that file — it may be a scanned image. Paste the text in manually instead.");
+        return;
+      }
+      var upd = await sb.from("policies").update({ content: text, updated_at: new Date().toISOString() }).eq("id", id);
+      if (upd.error) throw upd.error;
+      await loadPolicies();
+      openModal(id);
+    }catch(err){
+      alert("Something went wrong re-reading that file: " + (err && err.message ? err.message : err));
+    }finally{
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+    }
   }
 
   function closeModal(){ document.getElementById("modalBackdrop").classList.remove("show"); }
@@ -1118,8 +1167,7 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
   // ---- PDF text extraction ----
   var MAX_EXTRACT_CHARS = 60000;
 
-  async function extractPdfText(file){
-    var buffer = await file.arrayBuffer();
+  async function extractPdfTextFromBuffer(buffer){
     var pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
     var text = "";
     for (var i = 1; i <= pdf.numPages; i++){
@@ -1137,9 +1185,31 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
       text += pageText + "\n\n";
       if (text.length > MAX_EXTRACT_CHARS) break;
     }
+    return finishExtractedText(text);
+  }
+
+  async function extractDocxTextFromBuffer(buffer){
+    var result = await mammoth.extractRawText({ arrayBuffer: buffer });
+    return finishExtractedText((result && result.value) || "");
+  }
+
+  function finishExtractedText(text){
     text = text.replace(/[ \t]+/g, " ").replace(/ *\n */g, "\n").replace(/\n{3,}/g, "\n\n").trim();
-    if (text.length > MAX_EXTRACT_CHARS) text = text.slice(0, MAX_EXTRACT_CHARS) + "\n\n[Truncated — see attached PDF for the full document]";
+    if (text.length > MAX_EXTRACT_CHARS) text = text.slice(0, MAX_EXTRACT_CHARS) + "\n\n[Truncated — see attached file for the full document]";
     return text;
+  }
+
+  function fileKind(name){
+    if (/\.pdf$/i.test(name)) return "pdf";
+    if (/\.docx$/i.test(name)) return "docx";
+    return null;
+  }
+
+  async function extractTextFromFile(file){
+    var kind = fileKind(file.name);
+    if (!kind) return null;
+    var buffer = await file.arrayBuffer();
+    return kind === "pdf" ? extractPdfTextFromBuffer(buffer) : extractDocxTextFromBuffer(buffer);
   }
 
   function titleFromFilename(name){
@@ -1159,32 +1229,38 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
       if (!file){ statusEl.textContent = ""; return; }
       if (!titleEl.value.trim()) titleEl.value = titleFromFilename(file.name);
 
-      var isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
-      if (!isPdf){
-        statusEl.textContent = "Attached — this file type isn't auto-read, so add the text below so it's searchable.";
+      var kind = fileKind(file.name);
+      if (!kind){
+        statusEl.textContent = "Attached — this file type isn't auto-read (PDF and .docx are), so add the text below so it's searchable.";
         return;
       }
-      if (!window.pdfjsLib){
+      if (kind === "pdf" && !window.pdfjsLib){
         statusEl.textContent = "Couldn't load the PDF reader — please paste the text below manually.";
         return;
       }
+      if (kind === "docx" && !window.mammoth){
+        statusEl.textContent = "Couldn't load the Word reader — please paste the text below manually.";
+        return;
+      }
 
-      statusEl.textContent = "Extracting text from PDF…";
+      statusEl.textContent = "Extracting text from " + (kind === "pdf" ? "PDF" : "Word document") + "…";
       submitBtn.disabled = true;
       try{
-        var text = await extractPdfText(file);
+        var text = await extractTextFromFile(file);
         if (!text){
-          statusEl.textContent = "Couldn't find selectable text in this PDF (it may be a scan) — please paste the text below manually.";
+          statusEl.textContent = kind === "pdf"
+            ? "Couldn't find selectable text in this PDF (it may be a scan) — please paste the text below manually."
+            : "Couldn't find any text in this file — please paste the text below manually.";
         } else {
           var replace = true;
           if (contentEl.value.trim()){
-            replace = confirm("Replace the existing text in the box below with text extracted from this PDF?");
+            replace = confirm("Replace the existing text in the box below with text extracted from this file?");
           }
           if (replace) contentEl.value = text;
-          statusEl.textContent = "Extracted " + text.length.toLocaleString() + " characters from the PDF — check it below before saving.";
+          statusEl.textContent = "Extracted " + text.length.toLocaleString() + " characters — check it below before saving.";
         }
       }catch(err){
-        statusEl.textContent = "Couldn't read that PDF automatically (" + (err && err.message ? err.message : "error") + ") — please paste the text below manually.";
+        statusEl.textContent = "Couldn't read that file automatically (" + (err && err.message ? err.message : "error") + ") — please paste the text below manually.";
       }finally{
         submitBtn.disabled = false;
       }
@@ -1540,6 +1616,7 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     document.getElementById("searchInput").addEventListener("input", runSearch);
     document.getElementById("modalClose").addEventListener("click", closeModal);
     document.getElementById("modalDelete").addEventListener("click", deletePolicyFromModal);
+    document.getElementById("modalReextract").addEventListener("click", reextractFromModal);
     document.getElementById("modalPrint").addEventListener("click", function(){ window.print(); });
     document.getElementById("modalBackdrop").addEventListener("click", function(e){
       if (e.target === document.getElementById("modalBackdrop")) closeModal();
