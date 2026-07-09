@@ -1,0 +1,1562 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WhataHoot Policy &amp; SOP Hub</title>
+<meta name="description" content="Search, upload and request WhataHoot policies and SOPs.">
+
+<!-- WhataHoot brand font: Agenda via Adobe Fonts (falls back to Lato/Arial if the kit isn't authorised for this domain) -->
+<link rel="preconnect" href="https://use.typekit.net" crossorigin>
+<link rel="stylesheet" href="https://use.typekit.net/yic4lqr.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+
+<style>
+  :root{
+    --ink:#1F2623; --ink-rgb:31,38,35;
+    --orange:#E37B3D;
+    --orange-dark:#9D572C;
+    --cream:#FFF8F1;
+    --warm-grey:#F4E7D8;
+    --white:#FFFFFF;
+    --header-black:#0B0B0B;
+    --header-cream:#F5F1EA;
+    --grey:#6F6F6F;
+    --brandmark-orange:#C26110;
+    --font:"agenda","Agenda","Lato",Arial,sans-serif;
+    --radius-btn:6px; --radius-card:8px; --radius-pill:40px;
+    --page:1200px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.55}
+  .page{width:min(100% - 40px,var(--page));margin-inline:auto}
+  h1,h2,h3,h4{font-family:var(--font)}
+  button,input,select,textarea{font-family:var(--font)}
+
+  header.site{background:var(--header-black);color:var(--header-cream);box-shadow:0 8px 18px rgba(var(--ink-rgb),.16)}
+  header.site .page{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding:18px 0}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand .owl{font-size:1.9rem;line-height:1}
+  .brand img.logo{height:44px;width:auto;display:block}
+  .brand .word h1{margin:0;text-transform:uppercase;font-weight:800;font-size:1.4rem;letter-spacing:.02em;color:var(--header-cream)}
+  .brand .word p{margin:2px 0 0;text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;font-weight:800;color:var(--orange)}
+
+  nav.tabs{display:flex;gap:8px;flex-wrap:wrap}
+  nav.tabs button{background:transparent;border:1px solid rgba(245,241,234,.35);color:var(--header-cream);border-radius:var(--radius-pill);padding:9px 18px;font-weight:700;font-size:.85rem;cursor:pointer;transition:.15s ease;white-space:nowrap}
+  nav.tabs button:hover{border-color:var(--orange);color:var(--orange)}
+  nav.tabs button.active{background:var(--orange);border-color:var(--orange);color:var(--ink)}
+  nav.tabs button.admin-only{display:none}
+
+  .user-box{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .user-box .who{font-size:.85rem;font-weight:700;color:var(--header-cream)}
+  .role-badge{border-radius:var(--radius-pill);padding:3px 10px;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;background:var(--orange);color:var(--ink)}
+  .role-badge.staff{background:rgba(245,241,234,.18);color:var(--header-cream)}
+  .link-btn{background:none;border:none;color:var(--header-cream);text-decoration:underline;font-size:.8rem;cursor:pointer;padding:4px 2px;font-weight:600}
+  .link-btn:hover{color:var(--orange)}
+
+  main{padding:40px 0 80px}
+  main#appMain{display:none}
+  .eyebrow{margin:0 0 8px;text-transform:uppercase;letter-spacing:.08em;font-size:.78rem;font-weight:800;color:var(--orange-dark)}
+  h2.section-title{margin:0 0 8px;text-transform:uppercase;font-weight:800;font-size:1.8rem;line-height:1.05}
+  .intro{max-width:64ch;color:#3a423e;margin:0 0 26px}
+
+  .view{display:none}
+  .view.active{display:block}
+
+  /* Search */
+  .search-bar{display:flex;gap:10px;max-width:720px}
+  .search-bar input[type="text"]{flex:1;padding:14px 16px;border-radius:var(--radius-btn);border:1px solid rgba(var(--ink-rgb),.35);font-size:1.05rem;background:var(--white);color:var(--ink);min-width:0}
+  .search-bar input[type="text"]:focus{outline:2px solid var(--orange);outline-offset:1px}
+  .search-hint{margin-top:10px;font-size:.85rem;color:var(--grey);font-style:italic}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .chip-filter{border-radius:var(--radius-pill);border:1px solid rgba(var(--ink-rgb),.3);background:var(--white);padding:7px 16px;font-size:.82rem;font-weight:700;cursor:pointer}
+  .chip-filter.active{background:var(--ink);border-color:var(--ink);color:var(--header-cream)}
+
+  .results-meta{margin:22px 0 6px;font-size:.85rem;color:var(--grey)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:14px}
+  .card{border:1px solid rgba(var(--ink-rgb),.15);border-radius:var(--radius-card);background:var(--white);box-shadow:0 4px 5px rgba(var(--ink-rgb),.05);padding:20px 22px;display:flex;flex-direction:column;gap:8px;min-width:0}
+  .card .badge{display:inline-block;align-self:flex-start;text-transform:uppercase;letter-spacing:.07em;font-size:.68rem;font-weight:800;color:var(--orange-dark);background:var(--warm-grey);padding:4px 10px;border-radius:var(--radius-pill)}
+  .card h4{margin:2px 0 0;font-weight:800;font-size:1.15rem}
+  .card p.snippet{margin:0;font-size:.92rem;color:#4a524e;flex:1}
+  .card .meta-row{font-size:.76rem;color:var(--grey);display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+  .card .view-btn{align-self:flex-start;margin-top:6px}
+  .empty-state{padding:40px 20px;text-align:center;color:var(--grey);border:1px dashed rgba(var(--ink-rgb),.25);border-radius:var(--radius-card);background:var(--white)}
+  .empty-state a{color:var(--orange-dark);font-weight:700;text-decoration:underline;cursor:pointer}
+
+  /* Buttons */
+  .wah-button{display:inline-flex;align-items:center;justify-content:center;padding:12px 22px;border:1px solid var(--orange);background:var(--orange);color:var(--ink);text-decoration:none;border-radius:var(--radius-btn);font-weight:800;font-size:.92rem;cursor:pointer;min-height:44px;transition:.15s ease}
+  .wah-button:hover{background:var(--ink);border-color:var(--ink);color:var(--white)}
+  .wah-button--secondary{background:transparent;color:var(--ink);border-color:rgba(var(--ink-rgb),.5)}
+  .wah-button--secondary:hover{background:var(--ink);border-color:var(--ink);color:var(--white)}
+  .wah-button--small{padding:8px 14px;min-height:36px;font-size:.8rem}
+  .wah-button[disabled]{opacity:.55;cursor:not-allowed}
+
+  /* Forms */
+  form.card-form{max-width:640px;background:var(--white);border:1px solid rgba(var(--ink-rgb),.15);border-radius:var(--radius-card);padding:28px 30px;box-shadow:0 4px 5px rgba(var(--ink-rgb),.05)}
+  form.card-form label{display:block;font-weight:700;font-size:.88rem;margin:18px 0 6px}
+  form.card-form label:first-child{margin-top:0}
+  form.card-form .hint{font-weight:400;color:var(--grey);font-size:.78rem;display:block;margin-top:2px}
+  form.card-form input[type="text"],
+  form.card-form input[type="password"],
+  form.card-form input[type="file"],
+  form.card-form select,
+  form.card-form textarea{width:100%;padding:11px 13px;border-radius:var(--radius-btn);border:1px solid rgba(var(--ink-rgb),.35);font-size:.95rem;background:var(--cream);color:var(--ink)}
+  form.card-form textarea{resize:vertical;min-height:120px;line-height:1.5}
+  form.card-form .submit-row{margin-top:24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .toast{margin-top:14px;padding:12px 16px;border-radius:var(--radius-btn);font-size:.88rem;font-weight:700;display:none}
+  .toast.show{display:block}
+  .toast.ok{background:var(--warm-grey);color:var(--orange-dark);border:1px solid var(--orange)}
+  .toast.err{background:#fbe6e2;color:#8a2f22;border:1px solid #c0392b}
+
+  /* Requests list */
+  .requests-list{margin-top:16px;display:flex;flex-direction:column;gap:10px;max-width:820px}
+  .request-row{border:1px solid rgba(var(--ink-rgb),.15);border-radius:var(--radius-card);background:var(--white);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+  .request-row .rq-main{flex:1;min-width:220px}
+  .request-row .rq-title{font-weight:800;font-size:1rem;margin:0}
+  .request-row .rq-desc{margin:4px 0 0;font-size:.85rem;color:#4a524e}
+  .request-row .rq-meta{margin:6px 0 0;font-size:.74rem;color:var(--grey)}
+  .status-pill{border-radius:var(--radius-pill);padding:5px 13px;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+  .status-pending{background:var(--warm-grey);color:var(--orange-dark)}
+  .status-in_progress{background:#fde3c7;color:#8a4a12}
+  .status-fulfilled{background:var(--ink);color:var(--header-cream)}
+  .rq-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  select.status-select{border-radius:var(--radius-btn);border:1px solid rgba(var(--ink-rgb),.35);padding:8px 10px;font-size:.8rem;background:var(--cream)}
+
+  /* Team / people (admin) */
+  .people-list{margin-top:16px;display:flex;flex-direction:column;gap:8px;max-width:640px}
+  .people-row{border:1px solid rgba(var(--ink-rgb),.15);border-radius:var(--radius-card);background:var(--white);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .people-row .name{font-weight:800}
+  .people-row .flags{font-size:.72rem;color:var(--grey)}
+  .password-reveal{margin-top:16px;padding:16px 18px;background:var(--warm-grey);border:1px solid var(--orange);border-radius:var(--radius-card);font-size:.9rem}
+  .password-reveal code{display:inline-block;margin-top:6px;padding:6px 10px;background:var(--white);border-radius:var(--radius-btn);font-size:1rem;font-weight:800;letter-spacing:.03em;user-select:all}
+
+  /* Modal */
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(11,11,11,.55);z-index:100;align-items:center;justify-content:center;padding:20px}
+  .modal-backdrop.show{display:flex}
+  .modal{background:var(--white);max-width:720px;width:100%;max-height:85vh;overflow:auto;border-radius:14px;box-shadow:0 14px 32px rgba(var(--ink-rgb),.25);padding:30px 32px}
+  .modal.narrow{max-width:420px}
+  .modal .badge{display:inline-block;text-transform:uppercase;letter-spacing:.07em;font-size:.7rem;font-weight:800;color:var(--orange-dark);background:var(--warm-grey);padding:4px 10px;border-radius:var(--radius-pill)}
+  .modal h3{margin:10px 0 4px;font-weight:800;font-size:1.5rem}
+  .modal .modal-meta{font-size:.8rem;color:var(--grey);margin-bottom:16px}
+  .modal .modal-body{font-size:.98rem;line-height:1.6}
+  .modal .close-row{margin-top:22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+
+  /* Formatted policy document body */
+  .policy-doc h4{margin:22px 0 8px;text-transform:uppercase;font-weight:800;font-size:.95rem;letter-spacing:.03em;color:var(--orange-dark);border-bottom:2px solid var(--warm-grey);padding-bottom:6px}
+  .policy-doc h4:first-child{margin-top:0}
+  .policy-doc p{margin:0 0 12px;line-height:1.6}
+  .policy-doc ul,.policy-doc ol{margin:0 0 14px;padding-left:22px;line-height:1.6}
+  .policy-doc li{margin-bottom:6px}
+  .policy-doc .doc-fallback{white-space:pre-wrap}
+
+  /* Auth overlays (login / forced password change) */
+  .auth-overlay{position:fixed;inset:0;background:var(--cream);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;overflow:auto}
+  .auth-overlay.show{display:flex}
+  .auth-card{width:100%;max-width:420px;background:var(--white);border:1px solid rgba(var(--ink-rgb),.15);border-radius:14px;box-shadow:0 14px 32px rgba(var(--ink-rgb),.12);padding:34px 32px}
+  .auth-card .brand{justify-content:center;margin-bottom:22px}
+  .auth-card .brand .word h1{color:var(--ink)}
+  .auth-card h2{margin:0 0 6px;text-transform:uppercase;font-weight:800;font-size:1.3rem;text-align:center}
+  .auth-card p.sub{text-align:center;color:var(--grey);font-size:.88rem;margin:0 0 22px}
+  .auth-card label{display:block;font-weight:700;font-size:.85rem;margin:14px 0 6px}
+  .auth-card label:first-of-type{margin-top:0}
+  .auth-card select,
+  .auth-card input[type="password"]{width:100%;padding:12px 13px;border-radius:var(--radius-btn);border:1px solid rgba(var(--ink-rgb),.35);font-size:.98rem;background:var(--cream);color:var(--ink)}
+  .auth-card .wah-button{width:100%;margin-top:20px}
+  .auth-error{margin-top:14px;padding:10px 14px;border-radius:var(--radius-btn);background:#fbe6e2;color:#8a2f22;border:1px solid #c0392b;font-size:.85rem;display:none}
+  .auth-error.show{display:block}
+
+  footer.site{background:var(--header-black);color:rgba(245,241,234,.7);padding:28px 0;font-size:.82rem}
+  footer.site .page{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}
+
+  @media (max-width:720px){
+    header.site .page{flex-direction:column;align-items:flex-start;gap:12px;padding:16px 0}
+    nav.tabs{width:100%}
+    nav.tabs button{flex:1;text-align:center;padding:9px 10px;font-size:.8rem}
+    .user-box{width:100%;justify-content:space-between}
+  }
+
+  @media (max-width:640px){
+    header.site .page{padding:14px 0}
+    main{padding:26px 0 60px}
+    form.card-form{padding:20px 18px}
+    .modal{padding:22px 20px}
+    h2.section-title{font-size:1.45rem}
+    .search-bar{flex-direction:column}
+    .cards{grid-template-columns:1fr}
+    .request-row, .people-row{flex-direction:column;align-items:flex-start}
+    .rq-actions{width:100%;justify-content:space-between}
+    .auth-card{padding:26px 20px}
+  }
+
+  @media print{
+    body *{visibility:hidden}
+    .modal, .modal *{visibility:visible}
+    .modal-backdrop{position:absolute;inset:auto;top:0;left:0;background:none;padding:0}
+    .modal{position:absolute;top:0;left:0;width:100%;max-width:none;max-height:none;box-shadow:none;border:none;overflow:visible}
+    .close-row{display:none !important}
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="page">
+    <div class="brand">
+      <img class="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfUAAAF3CAYAAAC8MNLCAAAACXBIWXMAAAsSAAALEgHS3X78AAAg
+AElEQVR4nO2d/3UbN9O2Nzn5+xNTgZgKxFRgugIrFYiuwHQFpiuIXIGpCiJVYKqCUBWErOAlK9B3
+mAzyIDAWmAGwWAB7X+fw2JYpchcL4Mb8wOCH19fXDgAwOrOu6xZ0EXN69XGg14V913UnPD4AwIWf
+CrgGAKbERbyXJOALEu+bBPf/QkJ/EfkdxB6AaQJLHYBhmZOIq9d1xvZ+IYFXL4g8AI0DUQcgPRch
+v+26bpXICk/FU9d1j/SCwAPQIBB1ANIwIxEvTcj7eNAEHgDQCBB1AOJYkpDfVdqOx67r7ruu28J6
+B6B+IOoAhKGs8jeNtN+ZxP0e4g5AvUDUAZBxEfJN5oS3nEDcAagYiDoAPG5J6FoVc5OLW36NmDsA
+dQFRB8DNnOLNrbjZpTyTd+KQ9mMBAEMAUQegn4ub/VOC9jlqhWFO9Nozfm9Jf6oKc5diNVcjPK8z
+tcX9CN8NABAAUQfgexZknYdsTTtrFd2GqOymyskutT9zCT2sdgAKB6IOwH9ZkUUqEUpVuW3LtMBT
+s6CY/22GPfJnaiPE2gEoEIg6AP9jK9hvfqb3jyXkfeSqZveZXPIAgIKAqAPwj0v7kZkM96IVaymd
+OWWwrwZy0T/Q52PrGwCFAFEHU2dGrnOfVftMlumuwvaakfU+xP76F4rrQ9gBKACIOpgyHEFvbb/2
+EMVzIOwAFAJEHUwVjqC3Gjee0UJlndAtD2EHoAAg6mCK+AT9hSzakhLghiB1YR0IOwAjA1EHU2Tv
+EPQHEvRSWNBLFZ+Z9VyXKmijitxIFiRr8kiksNoh7ACMCEQdTA3XtrX3BWS1z7Q95zGFZVQRHHVm
+uk9kYwrumEDYARgJiDqYEhcL/Kvlfs8kQmO624c8l/1Mwr7xVIOb0Xa9FNdQmscDgEkAUQdT4WKJ
+/mm517EFfUlim+vAmCf6Ptf9pqp5jwI1AGQGog6mQF9inEvQ5/R/c+1gFZvwPtOfOy2WzamNPvbp
+b77CMX1eDSm/oaQsAPmAqIMpcHEpfzDu0yboygW+jNzHrWrB3/cIfCpLOBZfHfcUwn4mLwkOgQEg
+AxB10DoXgf5muUeVFDcj8VoPUG2tMyrRScrR5sQV/04h7M+atwMAMCAQddA6tu1rX7RtXCkLsLh4
+Jpf7EAuHFLgy1lMI+0ecxw7A8EDUQcvYxOiFhHxbsMD2cbS4sReZqsLZQhgS4IYHIAMQddAqMxIQ
+U/Ceme5vPQFOx5U0lxK1DW3HLCazpFfsmeou8b1cz7uIz4YbHoCBgaiDVpEko+mFWiTV2BaamMaI
+nc4TeRFiMsbnWp5AiBXfZ7FzT7RzUUKBHwCaBaIOWqTPSjd51gQ0tvpZrJA+MIrDSIk5uKVP2Pv2
++3M50meg2hwAA/AjGhU0yK1HxC5i/pZEa5tIYA4kynMqunJm/t4LXctqgHjzSbumJ+Hv3vQktu0p
+6S2Ua1pkAAAGAJY6aJFDTxLckcTTjJMPwZw8AC5X9RcS3VxW64qEWmK197nLdxF5BWdqH1jrACQG
+ljpojb7CMV/I7ZtD0DtaWCzIrW7jvaei2xBsqX24XoSOFgFzy89j6rpfwVoHYBgg6qA1TLE5U6nS
+3AKqWJGA69fzdsRksT2J9Avz/Vc913qgMEMoa8cxsgCAQCDqoDVujft5LKD2+JaE/EiWci5vQR8n
+ug6usL/psczvhVa/zhVOcQMgPYipg5a4CPofxv38OvKRqiUzp7bhxNj74uAXi/v3wHs89rj2AQCB
+wFIHLWFa6UcIupODIMbeFwe/p3YO4dryzAAAEUDUQUuY1cpw5KefvSBprS8OHlPTHS54ABICUQet
+YDssZezYdS1smfvY+6z1bURs/R0S5gBIB0QdtIKtpjhEnc+KKcw2UT9FZvPDBQ9AIiDqoBUWxn28
+oLiJiBPTFd6XtR7jgoeoA5AIiDpoBVPUkSAn51E7nc6FzVo/CLbImcAFD0AiIOqgFUxRx7ndYXCS
+5m56tqLFuOBxJCsACYCogxaYWfZaI54ext5R2lbH5jKP2W0AFzwACYCogxYwrfQO8fQoNoxftsXV
+Y1zwsNQBSABEHbSALR6LmHo4B4a13ueCD7XWrxFXByAeiDpoAZulDuLgxMdTbyOEtQ5AJBB1AICN
+HcOVnlrUsTgDIBKIOmgBuG2Hwbf3vE+EQ+PqEHUAIoGogxaAGAyDLz5+0/Pz0HwGnNgGQCQ/oQEB
+6GVOCwZ90bAnF3Mp2fULcoMrb8WBrjFFouCJasK/c7zHdj58aI2AvkUCAIAJRB2Afv5y/N8Dbf0a
+q8jNir7fPMRG8Zm5Nc3Ho0fUbdb1ReQ/BX7fHIWDAAgH7ncA+nHFhu/IGs5dNGVGovnVIehdwuI7
+Phd8apc5XPAARABRB62SQhx8wnipYvdHxjPBlaC/Ybw3laifPIubPksdADACEHXQKjlEXXGfKVlv
+y4w7cw5lkeBqh9SWNfaqAxABRB20Sk5Rv4o8zITD2hPb1ompwW4jJOnumPgaAAAMIOqgVVKI+ol5
+uElHFvRQbviZMOkttaiHJK4h2Q2AEYCogxawWdSp3LgSCzxFtrmNteUUuj6eBhBUxMgBqASIOmiV
+VDHunSBGfT2Qtc4541zhqwIHAGgYiDpoAVshmKuEwn4R1bPgvSlZCaz0LwNa1aGlXwEAGYGogxbo
+S+RK5YLfk7hyhL3vSNJQuPvgHwZYUOjgfHoAKgCiDlqgL4acsjDMI1n+nMS5VN87Y2S8X7LM32fc
+K2+CeDsABYEysaAF+kT9DQljKivzQOK51mquz+mlF4S5TRTbNj0NR7qGnfEnAAD8DUQdtMJzT6W1
+1QDJYycSVt1KVdvOPjArvnFQov5CC4kSreIUB8cAABIB9ztohT5xyeWWPpHwfqF/p4jnLymObzsJ
+rRT6PAWheQVYJAAQAUQdtEKfGNxkLj26Jss6xXfekCu/hCS1Pu9DX7u7DptxgYQ8ACKAqINWcFmy
+uZPI1gm20y0ppFByIlrf/v1Zz885QNQBiACiDlrh4NhLfZf5SM9dAnFaDFihTkrfAqXPSo9Z0MD9
+DkAEEHXQEi6rNneltdj66/uCrPS+BVHf9YUuoHAIDACRQNRBS7jqtL/LHFuPFfWS3O59lnffPYaK
+OrbnARAJRB20xN5j7aEuehi2xdCT45NCF09wvQMQCUQdtIbLWr8pKE5dE7bMd5cnIjSmDlEHIJIf
+Xl9f0YagJS6u37889/MrBITNxer+Znnzzz3JgJz270NtBUQGPACBwFIHrXHwuIY7sjJjtl1NCVsd
++weH8MbkLdxQLgGeDQCBQNRBi/hi59cJEtmmgk3UXSGO2GRECDsAEUDUQYvsHIVRFG884gT+iY2b
+leFePJn5qSrp4dkAEABEHbQKJyHuDuLhxHY+u8sLMo8oD2vyDs8GADkQddAqHGu9g7D3MrO43o+e
+tjpoB9qk4A7bEAGQAVEHLcOt+Q5h/55L210ZP+V4Py7W/Xs6XS4FH0ao3Q9AtWBLG2idixB9Yt7j
+c0Gnoo3NwXClH4WV4hbkLTEXBqG8LfxwGwCKAJY6aJ2N46AXkzckHLEnrNXOyhIbt8XXXexpEcBt
+ex+PeC4A+IGlDqbARQz+FNznmURsqi5500p/jshqn5Eg953HLgHFaQDwAEsdTIGL1fhRcJ8Xl/FX
+EvWp7ZfeJLDSdU4kxA8Jru0GiXMAuIGlDqbEI22VknAkd/QU4rkzstL1OPjnhPXyt5SUGMtHiDsA
+diDqYErMSJxvAu75C4lby65fc9FzpNBFyntOJeyo3w+ABbjfwZQ4kdUdst3qA4mIrWxqCywtXozV
+AIuYVSJX/BRDIwB4gaiDqbGPSPq6xJr/IItWsr2rdGaWpMDPA4YcUgg7jtEFwALc72CqrCgZLpQz
+xXVbEBbT7f6SaftYClf8bzicB4D/AVEHUyZW2LuMAjgUZhuc6X4Omb4/VtjP5DXBNjcweTq438HE
+2VJJ0xhqthIXlizyVUZB7xK44q9Q4heA/wFLHYBwi11aOrUkZpRfoO9JT7l9TULMrgQF3PBg8nSw
+1AH4m22gtVhzPH1nCPrDiPejCtTElJS9RzY8ABB1ADqytqVb1Z4rdvtuDav4JbJqXApitht2tEBB
+NjyYPBB1AP6x8qSnidUqIBsjMa2keuqxdQA+4NAXMHUg6mDq2Iqu+HiotGzsyjiG9jxQgZkYdpHJ
+iygfCyYNEuXA1NkFnCD2S+YM8RSY55ufaUFTaqnVmK1u75ERD6YKRB1MmYuofRPe/wNZtzVhy3Sv
+IVt8H5gRP0TNegCqAO53MGVC4uI1xtIfDUH/WMn2r9vAxLnrAhL/ABgFiDqYKssAt/tDhW73tXGf
+DxXFnQ8RXpE1triBKQL3O5gqU4ilz8mFreLotbql7ymzXcoXWOxgakDUwRS5iN1fwvuuMZZuLlxq
+PoM8NL5eY1IjAMHA/Q6mSEhcvLZs6pUh6J8rFvQuIr6OgjRgUsBSB1PkJCw2U9tJbDOyTmt3u5tc
+XOm/B/werHUwGWCpg6mxCqgeV1tBk7Vxj5tGtnfdU3leKbDWwWSApQ6mxqOwglxt53WbVnrt572b
+mMl/XGCtg0kASx1MiVlASdjHyqxcm5XeEofAe0IWPJgEsNTBlAg5N/1tRXXebbH0Ws979yHdklib
+xwWAIGCpgykhPQHsWNnBLbeNW+k60mNar2CtgykAUQdTYim81xpKqeroonWu8PolHAISGCHqoHkg
+6mAqLAOSq2oSxYVRnKW2XIAQNpQIyOWqwgJCAIiAqIOpILXSz5W53k0rtGUrXUdqfcNaB00DUQdT
+QSrqNQl6Z+QLtO5619lRCV8uNwF9AYBqgKiDqSA9vKUmUTRDC7UtSGJZC5Pm4IIHzQJRB1MgpPhK
+bVnvOlMT9ZMwae4Ox7KCVoGogykgFfVjZdXHpi7qHSXNHQXvh7UOmgSiDqaAtABLTaeZXe7t2vhZ
+zaexxSBJgoOogyaBqIMpIE2MqkkUzXsLOfCkFR4F93/TWE18AP4Gog6mgDR+WpP72hSmqVrpCkkV
+PVjroDkg6mAK3AjvsWZLfeq1zS8LsifmeyHqoDkg6gB8T03CaC5YppgkZ8KNrV8FnAcAQNFA1EHr
+SOPpNcWkERO2cxAUpIGog6aAqAPwX2qy0m1Z/VOPqSu4sXWIOmgKiDoA/6UmUbRZ6lOPqSu41jpc
+8KApIOqgdVp2UaMqmhtY62ByQNRB60iFr3ZLHfwPrrUOUQfNAFEH4L/Afd0WHGsdLnjQDBB1AOoF
+lrofrrWO41hBE0DUAaiXKzw7FpwT3GCpgyaAqAMAWmfPqD9wHXDwDwDFAVEHoC3gkrfDia3DWgfV
+A1EHrTO1sqnY5mbn0g9ePO9BXB1UD0QdgLaAC7kfX2wdog6qB6IOQFtA1PvZdl13dPz/FcIXoHYg
+6qB1DhN7whAlN1vP/8NaB1UDUQetIxX12i1dWOpu4IIHTQNRB1PA5XI1qV0UzfPVwX85eYrRQNRB
+1UDUwRSQWOs1ZY/3LVYgTG5c1jri6qBqIOpgCkgOaalpQu9brECU3Ow929uwKALVAlEHU0BiqbcQ
+k4ao+3FZ62g/UC0QdTAFJJb6dUXt0XdfsDT9PHZdd+55F0QdVAtEHUwBaVW5WkSx75hY1DH3cyJh
+t3GDynygViDqYCr4DvTQqcVSc4UVYK37gQseNAdEHUyFFpPlIOpx7B07CCDqoEog6mAqSFzwtQii
+a6ECUefRZ61D1EGVQNTBVOiLn9qoJSZ9ciR7XUOYWPT1C+QkgCqBqIMp8SS41xasdZwP7ufQ0y/e
+lHahAHCAqIMpIbHWaxFEV1gBos4D1jpoBog6mBJTi6vfQJhYQNRBM0DUwZToc7XauKrE0vVl9cNa
+99N3yAuSDUF1QNTB1GjNBX/wnEK3zngtNWPrFyhAA6oDog6mhqs8qMldJRO7K6yALHgetn6BdgPV
+AVEHU+Piat0K7rkGa92XKwBrnYfEiwNAkfzw+vqKJwOmxiUB6i/mPb9UYLH57udM7+mrFQ/+YdV1
+3VejLX5A24CagKUOpogkYe6mgoSpg+d88FqS/sYGljqoHog6mCquwzxManBfwwUfz8my2MO2NlAV
+EHUwVXaCk9veVTC5+/IEavA4lIBprUPUQVVA1MGU2QjuXfLeMdgzsvphrfuRnr0PQFFA1MGU2fUU
+HbFxV4HV5osJ1+BxGBszPwF71UFVQNTB1NkI9q2Xbq1z8gRKv4cS0K117FUHVQFRB1PnIEiaK91a
+33uqy3WVeBzGBlnwoFog6gD8Y736xFAhyZofA44gwVp3sxN4bwAoCog6AP+wYrbDu8KzyDmLDljr
+fpAwB6oEog7AP1wm8S/MtijZ0j0wt+rBWncDUQdVAlEH4H9w3fBvCq/Qxqltf4ckMCcQdVAlqP0O
+wH+5uNa/MdrkWLgL+0AntLl4RkEaJ/e0QPKdWQ9AMcBSB+C/cN3w14W7sDnW+huIupM1BB3UBix1
+AOzsqbSqi5JPP7sUTfk/xvtK9zgAAATAUgfAzoqxrelKeDZ7Tk7MannXKB8LQDtA1OvgHgUxsrNn
+il3JW9y44YENrHUxM1rQvdICCkmHoAgg6nWwQN3uUdgyrd1toTXCD8zrv6qgqE5JzCj34o6u6Yr+
+DWEHowNRrwOVrFPyNqpWWRsHfNgoOWmOe12lF9Upia0l3+IK3jRQAhD1OjjQVXKrnoF0nGgx5Yuv
+fyhUFLnWelewx6Ek1rQAsnGNhREYG4h6HShL/QaT7igcmF6SUkWRa62Xvk1vbC7u9d891wBvGhgV
+iHod6HtlMWmMwyVm+t7zzdeFxqYl1nqpHoexmTF3OqDtwKhA1OvgpLl/MWmMx5ZRmOau0IWX5Nx4
+uOG/555Rt6BjvgeAwcgp6huyGF4poQTiJAPJcmWwZli92wJ3KkjOjS/V4zAWt1qmO4cS57YZ5eTs
+aQ5+FYSVQEXkqCintn/YVrBvcXACm602sfyK8pWjs/VM9C8FbnGaUb/x1YRX/IaM7r+5eDj+n+D9
+7wsqSjSjheiaMvRNztRPD+6PAbUwtKU+dwh6h0pWIvRBBy/H+Kw8FvtNgdXmTsJEuBI9DmMgEfSu
+kDab0/O7lAr+1CPoHf0c80lDDCnqC0b9bMTt+OiWOQZhGfiE/a7AbYhb5nnrHfZeBzOWh2auHULz
+lyBkgIVbQwwl6peJ7E/H6hDI0Q8NgaiXg0/Yvxbohpd4yG4QXxczlrGyoy130mS9Eg8kAoEMIer3
+NJFxKPUwjBLRcw+uUJKyKHzCXloJ0Ysl91nw/g8TL3x0LOAafNwKciVMkJ/TEClFXSXhfGC+/whR
+jwLWelmsHPvYrwrcJnYvFKv7CS8kpUlkbwa6Dhehi64zkpXbIpWoL6njS9w+KHkqR4+FwlIvjy1l
+jNv2g9/Q5FmKsJ+EY7DEhQn4h7mjdK0P5Ew0RgpRv6zgvwnj589YHUYDS71MVA0G2yEwpWXE7xjF
+dHRuIAJFEmMgoSxwY8SI+kLobtfBVrYw9IXQNaymYtmTsNvi7O8KE/aN0A3/BmGz4gidTx+wP709
+QkV97dl/7uIBiRnJgAu+XE5anN10x98VJIxSN3xX6Fa9qbKK2GWExVmDSEV9oW2bCO1IcPeEY4Ys
+4IIvn22PO74kYZe64Tva4TKVEqMlW7OhiyuEQBuFK+ozEuM/IzM74e5JCyz1OtjTszK3kZUk7Oue
+PAAX24n0wZA5K0dobB4xH8O4ahSOqKtDAD4laAJ0pDjMyQWVoOpiQ3X7dfEsSdhXgpPcOvLWlbYH
+vxRytEloLP0IK71dXKK+IhH5ailqcCR3ne98aR1Y6fGY7YdjHutDt9qVgJYi7PsAoVClZJG0mZ9Q
+1zuMq4bpE/WtRcxfSMh/1WoMSyYAdKRhgJVUJxt6dk909aWcw75lHC1rcl3YHvwpEJogd0aCXNv0
+ifojJVJ8pmIaP9MEtNYy1zcCSxFWejrMwzjggq8XdZ71W3qupYhiSHy9tOI6YzP0Dp9QKx11/Bsn
+9Dz1OXVa7krxF4h6MnZGcsxneEHAAEjHuOKFsv1bOiRkE5BT9MNA19LRs/kr8Hd/xgEubRO6T/1e
+MNhhpQ8L3O9gCA6B1iAs9uEJtdIfIOjtEyLqS2GdYbh70mJmrWLyBENxCcN9DPhsJewIDQ0DXO+g
+lxBRl3SMZ1SPG5wxToQC0+E+IHGuI2Hfw5OUnEXgEauYiyfCT8LbXAm3UWFlmIfZCG61OSV5KU/B
+Hod9DM6MxqBq822m0NYqsNCJ2sd+i33RyQi10pHxPg4rzWO1yzEOJIly6rx07irxCPfbIKxou6HO
+24yT5pwWa7YQzJEypyHuaZlpW0jNXJbfMrX3LOK8h45qWtQqLCUlyp0CkhcxF+dlTvO0bbx+GfpA
+M4n7fS10+8BKHwabZZYrrq6qC/blVFz6xx847CMZcxKUA4mKbTLPNc5OjiNlOXzFnBDNbeDedFjp
+ebilBfZfjvH6Yej5WlL7Xbq6QEfKR464pSpIxJlUvsIyiEJ5xVyTgyIkvhrKKaCUrM6HSjPjS7ne
+0OJEmIuHZ08GDSeJfNC5kSvqNjeCC2ydaIstVTyTgIkknFuBmzvUcg5FnRUfKuxvKkygK+VaQ0T9
+CVuKB2cuDEsNmrAoEXUJmNDzMuQRrOsAQe9o8sbRsGFI2m2MxXOssKuysgjT8IHrvVwki63QMcOG
+e0qbpDPhBKBhydm2Czo7v49nStT6hfYzmx0Wk3YYEstwrLEWK+xXFKbZotYCi5AF8hFJq1mQjNfB
+txVyRF1aghQrw/wMEaOZeSaELzTRPJJ7797i0SnhgJLamAldeWO6VmOFvSMvUGvHtx4H+MyQsYS5
+OA+SBdfoor4MSMRBR8rPEMlSG8fnfu4JyWyNCe0KLngx0vYaO166p0VlTGz/soj5c+itPhlJ/UxC
+C85gLh6emfDZDD5efaIuHWQvSMpoggVlKtt48nhvTOseoi5DarGWUCUsdrub4vdCy8uOHR4ICWMh
+QS4P0vltVEt9Lqzx3mFlOCop3Zd9+4nPjAnGFHVsbZMhmSSOBe0yUcIeUlJWR2XHl2S1hxbcSUXI
+whix9DxUJeohq0N0pPFIZU0sHeVAVwwRMRO3IOoyJKVYS6vlrfaxf4n8nKuCrfbcSLdLdbT4hoGV
+h+IW4a7a71JRh+u9Dfpc689YtA1OzlW/+q6FZUEYW8d/TZ9hljOWoqz2TWXV6FIutkIS5DBO85Fr
+f7oap3PLQvc/47VP1JEgVx8pLBqflc7lpQCXZY1IQyi+7WxqAlhqf18wtqie6X0xi/QtTTa7wP3V
+CmW1q1raubfwhXjAUlpjIa53lOPNQ+pF+IzG3UIbq3OmFv97BkSfqMP1Xh8pRL3PSn8QTvCoJhhG
+zCSxsLxixDTFM1SZ8Y8Jjgi+LBK/UV9cZ+xjY2+1k+Y1HXHEajak41VfkM618boUiHcf/87PfaIu
+dfkc4XqvHpeVLq1VgGIiYUgniQ1NCinO1D9qlvVjQtFUCXQhJ53ZuKP56T6gX+YiVdthb3rZSMfr
+rTZmYxbcHXnT9PH670LOJuoh5QhhpdePK5YuXbDB9S5nHjDu+rYd+tAFfJ/Jpb2h79kmqKtwRQuE
+VaFH/aaylENc7xD1fEi9OKHjVRdwNWZ7F442UQ/pSCgLWzdzh7WH+FwehtzPf9QmhN2IXjVVOW4b
+4Fa2oY76fdYWDakZ0/0utdSRrJyPkEU4l7MxXkWLxD5LXQos9fGJEYU+K/2MZ5uN1KL+pLnmSpro
+TzTH3JK4p5gY31C8/VnLvE9FSCgpRXuHxFhhpecjdQnsZ5srPQRT1EPKET5H3w4Yk5mjg4YIuilO
+sBz6mWlxtliXtDq847ESz9kjCVcqq70jcf+Tkuk2I/a9FN+LgjNlsqJXbB7LURPxXcrET1PU4Xqf
+Hq5T+EImCdOygah/zy21e6yYlWqNc1FW+zJRrF1xR68H+tyYOWos97t0LobrfTgW5AEKPf5W8aIt
+vAfboWCKeohLAaJeN65ynCHP1pwEMdH8w0Jb5ce6nD82luuw0ybOdcJYpRL3mJi71P0eW/9eIZ2L
+4XpPy5yewTrBYjPrNkyzTGyISwF7IuvFFW55DuyEEPX/MdNivH9S9msKwWpxAj9p231i68ebqJj7
+PsMZ/ykm7pAtT3C9xzOj/nFZ/P1FRY9SeI+2OWt36JZ6iOv9BYVGqsZlpYdOErYShi2z0Vbhj5rV
+uUgYK9Y5Nz7mDjSxbqltU+zBV9xQ6doNff49oy2l3z9GPB2udz4rLTFYjVdVCCbWvd5H1mfzw+vr
+q/p7SHGIhwwrX/A9r5afPQdMBidHJ/41QJAvK93/0/59bPxAjlWC+uZSQp5zzaSOt5s8kLj39XXb
+WHPxOUFRnEfhgrC1cMxQzMkCz8k5dzEu3f0ekhAC13u9uGK7oaUmTbGZgpUew5lERRKHndqYU5bU
+e+qXqbmj0IhyzesT8Fh136WLNrjeeaSoQPhACapcso9XXdRDVv8Q9XpxJeKEThJTEvXbCOvxSCI1
+Zx5nqzNVN+t2YHFXrvkDfddyJENHWtQErncec1rAhXAmD8wvNYxXJeqh1XEg6nUy87j3Qnc0mKLe
+8s6IkLDTxXX+VtufrSaHms9Qz83Q4n5Fk/+3wMVtrKUOK30YQsbrC/WzmVH3QBJSHE3UQ1akrSfs
+tIxvu0zIRDE3ar6fGxZ136JIR7nYf6EJ22wTqYt36qKuUOL+dsACWGMYOhD1YZCI+hP1q0XPThOJ
+XmafA2NEHZNLvbhEXRIv0jE/s2UrnTNejuSyUy72vhW7dOxhIf1fdiSEvw6wFU5KCs+BpD/gmFU+
+vlDZZfH9hRbft575S7LYyz5eY0QdcZxxiM18Hsr1bq6Ep2pBPGvx8g1jUEtceSjJ3I9KdPuZFlND
+uOZ9xM6JM+EJhyj8FY+e37JmPEPp/DtaolzItiOIep34XO+hVeTMyahlUd/RqhglpAoAACAASURB
+VF7xTELyq7YFi4tk7MFK96OK2Fza9bcIz1MIyl1rZtFzkRpXcL3z+ai984XG72+W/JaUjLGw/Lf4
+TMj515hg6sQl6qHuPLOIzdME+sfaU7yHi2Qih6tVxqN2cEyqkp8urrTStF9JPHaCQ3akViAsdT73
+ifbyS57RKIbvjxEHFmCCqY8hXO+2U95gQfCRWHRYSIdxoAl9Tt6UL5msqBsqDfyNitjsyIuw7Hnu
+krk4tIwziEMyXkfRyB9zV7sB0cRUaBvC9W4ewHHG4RIiYKnnZU99NrfAd7R18ROJ/P/RtdyTu34u
+7AtYOI+D5BmNsuj6aQKW+oIWLqdGJsU+Uefcm891JJ0oZhYXNMpVyig6k7Zx9loYRZ2itwwMR4Zw
+E/FdcL2Xz2ju91BLvfQJRm0j+pNWxn/Sv1OUCiwRzvNwWeohh/PYjsmElc5H6nWBpT4ce03cfzES
+IUskdP6VegTAf5EUihpF1H9q9MCNvsNprunn84oPogldhPmOc5Su/G1W+gN2RYho+bCbmjmQ1+pD
+wfegH0zCWZCb2+V+wVgdHIh6IuaM0+buSMRqtCpDV9mp4+k2K71VL0gJYI96XmqyZrku/LN25CwE
+XY5UK0cT9dbgbjO6bcxV7Fup++LpEtcurPQ0wA1aLlKP2Ef6HXWW/pBb5yScta19SK6LowoDONRS
+H2VTPRPuPsJas/5DE+VcsaCjUJDvLRnvKfZsTw1JH8SCKS/SeXFnGYNLQ+hnwphsCM90HfoL5Gc0
+z9pPgSvKkicYriuq1kzikOflW+hIXO9LyxGG98jMHhyIel5SJDGqcWWzkNWYVILPPRb0xfg89R17
+jEHQNeh+l1T7qXEF67LsXAM6pevd3LJ2RCwdTJwQq2yn/bkWiPoW20ZHo/g96l2EqJcaCyy+hF8k
+rnZ3CXMqUd9YPCG17iIwmTnad6g9wZJxVGt/tS1Ea7Aqc55xL/EKjLk/XT3PQ0X9MeU1F19NrosQ
+9ZBzhnPQuqiH5gH4JijORDG3xM2/VFoEY059ZUl/50zgXwbIG2glpj6jtlxobeoLE71QsmoLYYXY
+eyixqqAq/6yeq7mY/1igx0Af17Zrfj+FOhqtud8lq+saxahv8LsSF30Txgvzux+NxVxtbvclTVK3
+EXkJM8Qt/0UdkrIKrIp2Q32zRFGXeiJjhZb7fUMnX820g298z3RZiKjPqA9y+qH0BMUqaUnUJVb6
+ecDrGJI+N51rYkzheu9zu5cucGrr3Uog5E/UJruGSgunRE363AW0OqlMb88a+o2EGANhJvB8DmWI
+qLP/bxnX8kQL/LHFUV0zJxfhYYQtfaMZjS2Juq+4ik6tE3WfqLsmSZ8V4LOUlpZiPp8L93TMtJre
+nAnzmSapx4IFZ+z2VlYOZ3F0pPduK3WvS2LcXE9XH2O63tU48RXr6ij8VELRmhldh0/Mz9pxq6nG
+dBV1JWJEfVGYOLYeT+8cncr1HHwd0SUWM8vq9rlwt7sqKsQV882IgllDMYs5tSfHMlf1Cmp3ceZM
+XJN8V8r59pYEz7dIe9bO0Rgb7th+on6Y+pqrqG3yY8TvlnSDZl1jH7UmyfV1ZtdK1NcurrbYWeLo
+Eo9Ibi4D/g/GoD9Tos8yYFLe0dnYhwRjoJSqY33ckpBwBP1JWwBIWFF7vha0kyKn0HK/65xw3rqn
+ceLrf59pjJRgnXPH9seGEjCDiLHUSxJ1qdBMZTsbx13U1xZbY0FwpnYu0T09I7HlLOyOmlhJudUE
+7ppEqNU9w5d7+8p8b0xWsd5+m0Ks/JyiznXpprDSlTi+Y7zX9UxVkuRMy5EYKleCO7bV/NS3SNcP
+8Rr6mrsat7R11BlLqSUscb13lYq66x777ic0890Ws1oVmosgEfQXasfQgWy2Zy73ee6yzLkEfW5Y
+XqV4LrgGyznBmOB+V4rv4Y4T1zN1ucAfyO2dSiglgr50tJGrPw+xVbUb0/hpxf0utdRr3JbkEpA+
+UfeJjq0dVpYjJ98XfBjEo8BCjxH0zrKwypU4k3MRmkvQu4ITj7ihvBSLXO4ugtg+wB0nvmdqnvug
+o06/TKENkkWIy/M283jTPtDv1noWyHfEiHopA3IZUAynxuz3vvZ2Zd9Kt7PZJvTPBSc+SRK4UoQO
+Wj9VbSkQ9I8J+oWtPaVet9RIJvecCZYxcxZ3nPjGOuf0uZtE84UZ/uvjvec5LBj6cNNSqesfIwoa
+lJK5W3LiVkr6OrhrBS+x1G2C/lBwZ5fUy04ROjBdxV1Lq3u6P6435ilRLsHYAm5DsnCLFfUc29lW
+zHHC2dXC7e/vIp/thhn3f0pocHzwXPOilkV9jKVeSvxLKuo1Fp5xdTbXYPc9IyXqfYJeal33y+D6
+nfnez4lCB7YBHVJJrVTMioF9HBP2ixInyZz1vSXfFeJlWjA9L2fmPCpZxIQYA6o6HGffPLcfSsIW
+fbH1tWUnULH8lCDGOPYBA9LFRY2u9xBR50yYexp85iAKEXRVgnVOrxO9dgMUIeGuzl8Sehpadr3b
+Kgb2kaqSoKSSWk64z/klQTtwRT3Um8odJxvBvTwwLf832hnzp54DVfTjZ+fCRTK3Hx6o/Tjhh3da
+9UN1XSHh3VH5iRqd4+qwsRhZ1Fs5IcxHyHY2zoRhqxAmzQZVNaDNAak+9w0tGlJlmUoEKGVWa6ui
+PmdaRl3iA3z62nPsOYUbVkxhHHD7VMjigTtOnoWhlHXPYSk23gjP4+DyJOwjKvzGEeehrjkbMe73
+roCJbirx9JDtbJyYlino74VCeBks35gD/EOC+JdEgB4Si0Oros59JufE+RV9/XPsPAWuqJecJCcZ
+J9JneqJnN/ThMi6ki/UDjd/Ykr5V8GNk5xwz0SXE9d5VuEfdlb2ZcmBJtydJtj4p7iL7DNeiOCe2
+0mcVVH8LYSmwSiQuWg6lLpJKFHVpu3OFWmrx6tezpDkjdw2Fh8A5XAn754oP9GLxY+RAvR4xCz7U
+9V6bqIcmyXHF89LBf80g6IpQsV0KwkQpD3HoYKX/PXGnrpxXaptyD6xJMY8M4eqfC3aFxHpetglC
+oC/ChUHsNW+EfflMC4m3kd+bjZ8SxIbGOqN2KvF0lzjHWgsvAXWSJXuZbYTmb3AXA+cBBKjErVex
+SM6VH2JbY4meD+5CI5WVPoRBxH1WzxmShtXOE1tIZWf8ndMfQq1023f3hSe+aLtlqjx6WZWJfYnY
+njOGqHPO/W2FUEud41aVVliz7WU+aied3TK3mkl3TcxHtNK7Ri117iLpOMD4LnWRlKtkqxTu9+W0
+0hWua5szrl0SAspxzsJp5ETNaFSiXMzqZ4xktSlZ6X2Ll9hTm54DxM/cy/xCgqe2rN0z4/xSkZRM
+QEMsMFsT9YVgIh2iPUsVde515Z70ueNUslBLdQ+ua+N4IrhzeUrPQo3bmtkoUY+5yavMk57Eaqsd
+14LJVxoxNea2tb7DUTiThTTDmbtwTOWe02kxSU6S1zCEdVTqIonTL1Mc4jIUXIFM/UxDk+VmAs9C
+ysVlqCeviux5Jeqxq7aclvNUrPQuQtRTbwu6NQ55OTuKP3AmPImlthKEWqZkVcYgWSQNcfhRqaLO
+ua7cVjpXSCQhydSHM4UupCVe3tTX3LcQcY33Kg4CS2Gpd5ld8EMck1cic4+FGCvq3Gc+s4jlxvH7
+qTs+t2+ldCnqtOZ6l0z+QyySfP16TDju4lJd79xx8lLQDiDuNT8NMK+0uEX1b5SonyJdC9eZJj+J
+1VY7rg7vcwFyngV3kJhnJ0srUMXCtZSHOhq2NUsdi6R+OBN9qUlU3Oc6xEItpALbTBBGzXnsc21b
+nr9DryhXgwu+mePxGLjaM9fEsjIG3pnxnFOKoKTu8lA7MEooGZlSCLFIssO9rhLj6ZJxklMgXUj6
+QeprdnlkIOoaQ7vgJftqa8d3uIGvk3MPc3Ext1jk68ydnjvwjwNNtqUIUCrvlMT1PTVR57jexyyN
+6kIyTlKP39AFJ1cvQnbp+MhRMG20o8l1UY8dxNcDC/tUYukdwxr2LcA4MXXfQDHd7inPLuYy9haj
+oQUot0hIqgwO0aazgo+rLTGe3jFFeEzvi2uuiQ0RdhWHgIoQ9Y4m7hiGcsFLChS0gKsdcyS6rI32
+5rjdFSkz77nPfEyrsqZEujEn0q7wA5g4z7pUUec+19zeLJfhwF3cDbW47MN1zVUUpTFFPXZyfDdy
+6cMW8B1Uw3lGMe73uaW9JWdopxI5yecMNfA5i4pcp4ql+J4xJ/+u8KTDMSz1FJ83F4RnhhgnIfFp
+ST8Y4ppDq3RWQWpR7wZwk68ck+tDwOeN5hZh4ms/zjPiDPI+kba53cdIruGK2HGg/aM5BEhy3SkW
+S2Nb6iWLui/XoNR4Onc+i61A2YerT/V9H/eahyr24rrmVHNJMe73U6BQ6qwSWy99VvpLYIy3ZFGf
+eVyUQyWEKWLc7qkZOxs5h6s4t1UwpkUXelRyDkp1vXMYe5y43OgubyCHIa7Z59lwfadkUVSMqHcJ
+rLKrhNb62jER5NwrnQtfYRDOs+EMctsKeBHpdldwXNYpJ8iaRT0nkgzpIeAuDsew5sdKkksZL/eR
+243t8qBx72kIz4Lrmn3emCq2u/WJeuzAXiew1mcOK/1M11n1aToWfIuhVNnntsFWittdMaYFkusU
+QMmCKZfYDTVxlbxIGqs8LKetffMo1yLMLZApyljXHE/PlWvzHTZR7xJYwVeJDrPvm1i3EbGPkutO
+u1xZXNd7yP1tjO8OdbuP4XIaIp4uEaCYe87pfh/T5Vmy671jjJnYXUFDMqaoh55NwSV3rozvmiVj
+YzSd6RP1LU3sMXyIuLGFcYCIib7okCawlFpmNpWVzlkh6gP80sk/Gf8f4nbvBBNMyhX4EKv5XKIu
+IXblz73OISbS0g9h8s1TQ3kEcy7qhijg4jJCUrRZ6vbxLS5911zVgS4mp0Qx61B3sev3ng1RqqKh
+PXCOIBxC1G2HtcS43UdzOSXEdL0PFWPuCl35DxXO4JLbwuFsCRtK1HPOXamfq8vi9dXSGMuKdS0u
+uYfGcI3dohLlFPcJrPWbAGE3z+22/b9OSGctbWuNz0o3FzIuJANma6xcz5FJjtzvTjWZxfZPG+bA
+HzKvoMQF6RCn7Ol9zOfKzu1J802+Q+848W3bKnW3jmue8M35nGc8xHY21+KSO865fWG0cJNL1FNZ
+63cC99vK43Y/Whq/9gL8s4wJcjpryylJm0ztmWqSTD3ZmidHcVbvsQtE7uRV6xGw5kRaWrln3/Mb
+OlnU179KzEWIPZuCEzJNvbhcOtryLHjOkusaxXPpEvUukbV+4StD2Ff0Phe25LsQESppgvRlWp+F
+os69t9+Nf6c4UrX2Y0ptVvrQ1jT382Mt2DEWv2ZYietxyjk+x4qnK3LE1VMXznEtzJ4KNbRc+iMZ
+58Uny/lE/ZSwROtXajxz9TIjMfEJep+4hQyKkmK/vvaVWumcyd9MjMtZZIYbox7DNa1PVmr1zjnN
+LgaJaMRMEmNMtGafSpkXkgpXm0osuFA4/Tz00JQhmHnmihLrh/hyliQaJxlHRVrqHT2kVMlCF9fm
+/9FA2dAgP3hc7vp12DgFeBNKsShXDPeaZJCEdqL7RJM+p/AM93tyT1Zm7Je7eo91j+Zy540h6rZF
+UsewHHPW0489ZyEWzqIupBSrTsq4vMuz+My8n9z1RVyehQfh2JC8t0hLXZHaintH1uId07I8elZT
+UgEoJfnEt0KUurJCOtFLoQfmcJ5pypP7zIGv2iRFgRAXkr4bsxg9DJRY2Ie5YJXUlsg1GY4dT+8S
+LLY4/SdlXN41V3DnEc41p1rY+XKWpHOfZEEyis5wRX03cgEGX8NLRf26ABd8ais95jpSkLr0Y87V
+vHm0rx77HToGLOm7sX021iqUYI5ZvS8PHdLgMnY8vUvQv3KOk41jzuJa6R3zfanO3XcVMZNa6Qqu
+57poUe9otZNzpa94ZsTiakyW8y1UJINEIb2nzwnd3FzB4T6rEzPBJ0Uoxexf5rPx9fuYwXsSTBKx
+fZZjeaaYiMzJ35w8fRZ7rsnQ1XceMuZ1xIYjOAZX7DjxWbwS4+DE3PUR2w/mjtBuzPZd7hyW0pPI
+RiLqhxHctNwErtr2qnOs9JBtbBJLzhfSkDLEIonTBrED3xSgJ8tiamjLcogaBDYeGQuU2O+YW2Lp
+Zj/ztWeuBbdr0s157oHv+fvag3OtsW1qng2h8znAsOKM7RTX3Edo1cyudBe8RNQ7cqHlPFeYu286
+xAU1lqjPGG71YwZRT50nkdpS75giFPMczRK5fat33zXH9iVu/72KdMGfGALwJvI7Ho3J35aE6ZtM
+Y++Tw9hZ7zq+RY6vLYYeJ7eWmhaK50DjgNO+MYcAmcdI68QeViUxIosX9Y4aOocb/kEYU5ZWIBrF
+NUKdzZccGGpBc1e2XwaIxQ1xsASnAFLowJ9ZBnbfItJ3zbVsa+uYfSu0TbdGLLQvCTNnbL8Pl8jl
+Pp0w1nPBGSfvAhdKc4eBcY7oKwea413cBl6z7RhpxUsCgyZXcmsQIaJ+ynCM4ktAvCPEBZ/7OEhO
+9bhQK51Lare7YqgV6cYTcw45v39GwmIeNds3MfpEKDbxMuckcSB3qYuQWOPW2Avsm/B9eQRDT4Yu
+ocy919rXvzg7hDiFwqTjfmbxvCjO9Ixi8g42nmsOHduua75NkCtxyJgHIyZE1DvqhB8HuqaXwM4S
+YnnmFvX7Aa10LjGxpBSEJDX6ntNGMHjm1FdMi9K1eueIbowISZLlUojdxuPZuhH2Q1PQO2pP17Me
+O67e145D13rvwxfW9D33E8MC/SCY82aWcaJQgh7bTgeGaH8KGNu2fCV1zanqNXDvvRpR70igfO4T
+KaGC3lVgqS8ZJ7HFWum+kMIQbnfudytCBtXl2b53/P8V3ZdvAN3SZ5lnx/tW7xzRzRVXTzVJ+MJo
+nxjCrqwis1+/Z7iwfeN1SEt97khUHasiWopkzEeGsbVlzHtLyzhRpBJ0/Xp8OrJj9Afb2FakvuZO
+MF6vs8fVX19fY1/b1zTsX19fZ5HXcgq4ktsEbcB57RnXsoz8Dhcp2jf0u3VivoPT1y7vWRi/d3nG
+O8t7D5b3hn73PvLeVoI25F6z77VgjJkdXZved+avr6+bnt9dMb97mfE+JW095BhxvW49bbERfNaa
+0baScaKQjJccY3vGuOY99dfU17tgXK+COyaSvFJ90L3gBm3cJ7qOx4Dv3mZoaM4g2yX4HhdDDUY1
+uDicIr/nENrBetpbMoFzRDdm8pgLrn2d8NlJJicXp4AFsm9BIREyyatPQHLMBaFjSDo/3AYaOX08
+ZljwrBJf8/3A18y91qz9Ksb9rnOJi/wWUCP+8v63CY9jDMlavRt4+8ycGZ9MEUvva//3A8cJuS7h
+mGtYGC7T0PMIzuSilIZ5ht6CcxDs4Ejpmk7RLx6on0vHn8+FOdQhQ33tN2SCqg9fQRapC/eRfic2
+RPpMc3SKBDMfWxrnqa55PfA1c/v7kKGkBY2jf3dApBL1jm5wQQLim5xe6H3zxDHe0M8a8oxnV9EG
+xUOidjDv40ztPOZklQrbiV8/k0BzxPCF3jsPjJtyqmDF9iPu4jLlJGH7rBdGJvWR+u0vEcmXvknx
+eoBEo754+ssIB42YuL4/ZIeFSp77hfJpuAvhMz3bt9Q/crbLIfCaVX/8NeM1S+LqQyXMbSmf6YoS
+Iec/XMz1gZjTS580dvTQhjwxqi9ZwsWZrjX1qm5jOebUxi8J22SuTbKSQzRiuDzjb4zf/xzhkTgY
+k/FbY1DNaOAstMlP9bV9onbgnPlvXlfKz07xPSZry9n6b7XkpLlhJaYcwzP6HNei90FosauEqb7r
+62vnEha/l2v/w/H/KZ75XBsnJmqsjJH970Jdr81bsfc87yGZ0amjHD4OkIRp68s/jxU/GvIVGt9P
+Hb/zJb4M9b1jvDg5AzH3aiZVxcbmQ18zZmKZ9PM5n2uSKg/FlmQ0RGJR34uTIMXNB5lr7diXnGT7
+vrH6k+3lImUuBV5pXpwE6NcEibScOePvuSel+70UQlfb64Sx9QXzOo4jbqFJyRAlYnVMS20sNym3
+zKo0tq4Xy+C6G1Nsx5xZtiKeM1s9nP7PGUtm0ZE+a9PWbiWNQdfhLGOeVwHscPXmJvHWNtvpc39f
+S4uivg9MorpK5H5bWKqV9TF0IkdphIjF3LIPOncZTx1O+OBesNDZasJ6FMTlrxMIu+33c7te94zC
+KzeesWkWSukrILOwjMtzYaLu6ttjnywJvkcyF6VK/FxaTp87tyzqXcSk/y6y4SWC/jyyONWC7XmM
+2W6cmtXXNMBcwm4r3LJlHs6hiJ0kbAuIMbwgnIXSXU+b2gql9PUPm6X7WNjC2tW3Y8sRg/RIdq2k
+EPVZzwL334Vpq6Ies/L+Gtj4EkHvBtyu0xK2WvlPBUzCvprVHS0Qd2QN6263hXZymX7ylW4xchct
+7yJcesuehNIxkqR2zDPB76jdHul1oARNM5u9b/zbPBO5j5P2cYILvjq4enOdYN6/t/T38xRE/RB5
+ROxX4faky3v/FAh6yPnDU8R2ol0J2/MOzIF8Q9nMf12KN9LrT3Kdmfe10RYrkkVpaHv0idlY+Qpr
+pofiihYz73q2pj30jC1b/kDfe8cGLvi6kHgOYxaRq55S4/e6odOqqHcJJv/faYJzWUJqP6S5JchF
+33GUU0AyIS0s2wGPBYUsfIeiSHg2hFySFxKSmLfqqdX/MqIXhHO4B4e+sWWzcEsdh64+Dku9PE6C
+gjnXgf1u0bPY/y4npHVRD606pnhDVtaeHsSSJtAN/eyb8Fz288Td7hJXsW1RVloRHd+hKBxeEmRk
+++L3Oq7iO2O3L+dwDxdfHJa32cau946NSyQk8w3Ih2TsSE6e6zyh3XtzIT5k8ZkSkBb0GJpWqruZ
+cIvsHJnCft+T3TlEgaBYuIV3bLjuiVOYRYdzwqHrOM0ucRGkGEIKSL14JsqT1pal9iUdV79KVXgI
+pMUskOWCe3KcS9Ct/bhlS71LZK2n4qFRQe8EkyMnUWRlEfTOtiIthB2deyC12F88wsLZE69zQ9fS
+Z7HbzpE3r6cUy3UpzIl58bill8akWGpf0tk55i644MtE4lbnHBfty9WyboluXdS7QuJmL4273SUZ
+0xuH8Gx7PCulF+l5FArRF+aBMtK+e0PCvNE8IktqO5/1W1L7nui6PzPe+8RoS10Eayr41Pf8UxQe
+AumRGpFXJNobTdwXpBUHT67Wc5+R2Lr7XbEbMRbFcYvWjqQGsmqTteZCVBX4+kTnt4r29K/o3sx7
+UUl+90KL2BaKSA03LDIG6pTDW8NieaK24bihdVd2TX3JFYL5eWKFq2ohR8j3THOmdR6ZiqjPyVLh
+xidTMQVBV0jiSRKeKrZMlIUYE/+UxtZDqCXXQy08QsIEM60ta6IvX6WmxcnUGNqIdB4OMxVR70ZI
+mpuSoHcDWZRHWpFO3SLxnd4VwzNitEXTt6iTnl4H8rEgt/oQeI2cKcTUFVuKZeZgaoLeDRCnPFPn
+nbqgd2SRxWz16mPqWyxr4NQztrAQK5c9WdOpYeVmTUnUO4p1DjE56jxMUNA7siY4pT45cLd7TIl1
+wmI3ihUqG1bBvWV3xTWqyxXNfWKtUQtwr65MTdQ7apghLPYzrc5YDd8o3FKfvnaEoH+PyghPJezv
+EZOtBljrdbJKJOyiOXGKot6R+LxPIECKZ0cZvylxoM4X2q6qgAgE3c4pYA+3ybnhIkgtY7PWIerl
+EyvsYiNnqqLe0aS2iJwgj5SFuoQb81/21B6S/ZrKy9G7TQP8i2QPt4nK9YCg18fJsm/9XQs3NgFW
+EQWqxF7LKWW/u1iS9c4ZJGdyW25RqtGJOjbVdtKa4kjtWEOFrxLp28NtcqT3QczrRy8iVHJ9AfA9
+ak5cebb/qgJJQZ5fiPp/mZHAL2iwqAGzI9HZQ8iDUG2qKskdqC3hZk+D3m9VO++pnXdo56aYaxb7
+PZ5ttSzpNdfKRSt9idIYiDoAAADQCFOOqQMAAABNAVEHAAAAGgGiDgAAADQCRB0AAABoBIg6AAAA
+0AgQdQAAAKARIOoAAABAI0DUAQAAgEaAqAMAAACNAFEHAAAAGgGiDgAAADQCRB0AAABoBIg6AAAA
+0AgQdQAAAKARIOoAAABAI0DUAQAAgEaAqAMAAACNAFEHAAAAGgGiDgAAADQCRB0AAABoBIg6AAAA
+0AgQdQAAAKARIOoAAABAI0DUAQAAgEaAqAMAAACNAFEHAAAAGgGiDgAAADQCRB0AAABoBIg6AAAA
+0AgQdQAAAKARIOoAAABAI0DUAQAAgEaAqAMAAACNAFEHAAAAGgGiDgAAADQCRB0AAABoBIg6AAAA
+0Ag/4UEWw5xeB3oBANKwpE85dV23R5uKWXRdN9N+aVfJdU8SWOp8Lh351fK6CPBj13Uro+NL2XRd
+963rum3A79qu60SfNWd+Rt/9PWqToo+N9nvSgb/s+X79tRF+ZigbxrWYL067utpRv/+9py+ZbeVi
+52i/GX2X/r2c+5C2gevZ7mjsDMGaxsE3ev1J43Ux0Pdx+rCrD+hj13eN3M+U9BWdGfWXA7XbN+31
+ypxbzO92Pee1cf8xc+mkgajHc9113buu677SALgN+MRLB76jv79JNOlc0WfuIz/vHQ3moSZe8D03
+tJgamnv6rgvnkZ7xGxo7IYtZFxeR+J3Ggc41LSSGEvYUXNHzH0vYFjSXfaL2snGZW/7yLLQv7fxF
++/d9z0JgbnzOioQdBAD3exgvWqd7o33CZTD+0XXde+Ektbb8O3SC/UyDcknXc0WDiWttX3igP5fa
+oP5KE02uwfZs+VmusMTB8v36c37J0A5vqA8NacXeaf9eCVzTx8hnodpWb9M7EoFU4q6PKbVgWdN3
+XpGIhCzAuZx72pPbb9TiY5lZ4Bb0vfpiSN2L8nLcaP/3iRYf5hymUO18OLFulQAABe5JREFUTZ+5
+tcxFj9r3PWVa0LbL6+srXrzX7vV/LI3fWb2+vp5e/4v5HtfrYPzu5bNmgt/XUT9b9Py872W7v5lx
+bb572mjv3Qn71VJ4vblfr4J20F+ufuO6f8U2sq3079/09I174X1sGO/nXO+lf+21nz8mfKY6C+37
+Qvun9D5DPt/Gvmcu4PZHSV8xx3vfs14K5zuzv+mfqc8ZB+G8h5flBfd7GlR86ax92j3zk28tLq6r
+BFaEbiWcHe9zcTIsMrjE8nOXOJdgZuQ7PDusrKE5GVbZUO7mhfFnTdwMEJroY2XMRe97+p7yIOjz
+iquP7smDqPhEz2RBf1fA7Z4AiHo6TsbkeMNMUtPdq3rHj5loZ8ZEwF1gmKw1F+kzMoez8qR92aeE
+bnjd1Xke2AXNQRfalBO63n731H76AqL0DG79+t9lEna9Lzx7vnNvzFFvPPPdhsJWinvj878gqz4N
+iKmnZUuxZ8XCE3uc04DtKE65oYFyRYuCRYCQ2jJcpTGqbwk+IxZzgG8zWiwlsKI2UPFL1a9i2mBt
+xEpD47UrS1xUkrOhrLqlEVdP2cc2Rl6JPi5fIha6XBaRffieno3Ke1B/DpnMqD8LznU+Gu0698x3
+K8qkN7/rZURvUXPAUk+Pvhr1ufv0Abo1/uwSdvQU2b6/Z86OfmO8uFvzWuFEonTU7udr5HPUBf1L
+hOfl2vJ8JHyil/57D4kXbaeeBcuzsZgZylNxlaAPr4yEzbuMY5CTCCldEF7620fLz7GzJiEQ9fTo
+A9fX6X2ifhsQZ/xMry9azOuKhJ37WQ/a55iiIrHIQBwn6gN67DLVdqxVQdu6nhJP7HMSENt2rJnx
+vj8K9wDdGobC10wiOFR+w71xPzGLS2ABop6WuWENuTqrmSC3pQlbdwuGJMxtNDf+0hB27mdttc9Z
+GIMw16r6B+OVq/BMaewtz/H3wGvU47Rqe1HI5P3Z8nwk/GCJGadcYGyMvAE9V+VGW+CqsTaEBfyc
+qA8rj40Zjx4CfQHPWbybz4xruZ96/g4SAFFPiz7Yzp7ED9O13ufKjHHB742FRYgL28xQnpobvAT2
+idzEpvvzJkNsuY+V4YFIWWzl1vj7hjK5FTfUFiqf5Vz43uiTZWE3BPp8xamQac53sLgLAKKejq02
+SXSeyXJuiPez5aW4iXR5S8IBQ34GiGNnCFMo94aVfDdSktLJEN/rhAsMm7dsa7Sf7iW7r6Bfm8I+
+BLonwRey2xpz2FiLQ2CA7PcwlNtpRgPNdKX7smv1SfShx/X3qC0SVoLtHvoCYG1cF9ca0d1qS6Py
+GPczZj2LEe6hGn0Lmb1jAlZZ2a0m3qjY71fP+3yYmfW/07+5ltY88tkqVBnRD/TvVFXljlq/v9fG
+24nGpl4R7TyQIPX1/y5i65YKxZgV31JxoFCF2jt+Qz/b0HeqmvRrS/b6VMNj5YGKPOzX7pXHjlEV
+6cSoxHRrfJvrMzn4qoZx7m/v+YwN4zP6Km31VVQz6WuvlfY+WxW22JdOjopyknbmfr9eyWth9ENf
+FUNO/+A+W/3/zCpml+uYRz4rTj/U6avaJn1x+zBnHEv6iuu9a6NtOfe0HbjtYqoT4uV5wf2ejiO5
+93x7f1faKvvoWLU/GokrodanShSKdbE+FZ75vtdck61n6G+0+vyhmMVDrkaKK5tu+BTXsTEOErGh
+hyBuhLtDxkYSitHblushuMw1vxnzj40vI9SmBx7gfuez7RkUO+EZ6ActG9c3yNaaK9w1cD73/Hzn
+cVfr9N3fXjvMwQdn0uj7nIPjPji/v6d7+DBQZSr92iSHmejt6vo97v0rVpo7lPv9tmIoM8s2L9t1
+9vUPndBnuycR0e/FV8jEx5qu+VZb5B3oux61ExX177QVjJEgfYYmkj6mQhSu0qpm3FuyWHqk1612
+QFSnteE2QsxdfRJE8sPFXAegEQ4US/0l44luAJSGOpFOzx14Ro2JaQD3O2gFdRjFZwg6AP8R9JcC
+avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="WhataHoot">
+      <div class="word">
+        <p style="margin:0">Policy &amp; SOP Hub</p>
+      </div>
+    </div>
+    <nav class="tabs" id="mainTabs" style="display:none">
+      <button data-view="search" class="active">Search</button>
+      <button data-view="upload" class="admin-only">Upload a policy</button>
+      <button data-view="request">Request a policy</button>
+      <button data-view="people" class="admin-only">Team</button>
+    </nav>
+    <div class="user-box" id="userBox" style="display:none">
+      <span class="who" id="whoLabel"></span>
+      <span class="role-badge" id="roleBadge"></span>
+      <button class="link-btn" id="openChangePassword">Change password</button>
+      <button class="link-btn" id="logoutBtn">Log out</button>
+    </div>
+  </div>
+</header>
+
+<main id="appMain">
+  <div class="page">
+
+    <!-- SEARCH -->
+    <section id="view-search" class="view active">
+      <p class="eyebrow">Policy &amp; SOP Hub</p>
+      <h2 class="section-title">Find a policy</h2>
+      <p class="intro">Search however you'd naturally ask — the search understands common alternative phrasing (e.g. "cleaning down the bar" will still surface "Shutting Down the Bar").</p>
+
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Try: cleaning down the bar, fire drill, cashing up..." autocomplete="off">
+      </div>
+      <p class="search-hint">Tip: search by topic, not just the exact policy name — e.g. "closing till" also finds "End of Night Cash Up".</p>
+
+      <div class="chips" id="categoryChips"></div>
+
+      <p class="results-meta" id="resultsMeta"></p>
+      <div class="cards" id="resultsCards"></div>
+    </section>
+
+    <!-- UPLOAD (admin only) -->
+    <section id="view-upload" class="view">
+      <p class="eyebrow">Contribute</p>
+      <h2 class="section-title">Upload a policy or SOP</h2>
+      <p class="intro">Most policies are PDFs — upload the file and we'll pull the text out automatically, format it into a proper policy page, and make it fully searchable. No PDF? Just paste or type the text directly instead.</p>
+
+      <form class="card-form" id="uploadForm">
+        <label for="up-file">Policy file
+          <span class="hint">PDF works best (text is extracted and formatted automatically). Word docs and images can be attached too, but won't be auto-read — add the text below for those.</span>
+          <input type="file" id="up-file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg">
+        </label>
+        <p class="hint" id="pdfStatus" style="margin-top:6px"></p>
+
+        <label for="up-title">Policy title
+          <input type="text" id="up-title" required placeholder="e.g. Shutting Down the Bar">
+        </label>
+
+        <label>Category
+          <span class="hint">Select all that apply</span>
+        </label>
+        <div class="chips" id="tagPicker" style="margin-top:4px"></div>
+
+        <label for="up-keywords">Other words staff might search
+          <span class="hint">The search already understands common alternative phrasing (e.g. "cleaning down" for "closing"). Add anything extra specific to this policy here, comma separated.</span>
+          <input type="text" id="up-keywords" placeholder="closing, lock up, end of night">
+        </label>
+
+        <label for="up-content">Policy text
+          <span class="hint">Auto-filled and formatted from the PDF above — check it looks right, or paste/type it here if you didn't upload a PDF</span>
+          <textarea id="up-content" placeholder="Text will appear here automatically once you choose a PDF, or paste it yourself..."></textarea>
+        </label>
+
+        <div class="submit-row">
+          <button type="submit" class="wah-button" id="uploadSubmitBtn">Upload policy</button>
+          <span id="uploadSpinner" style="display:none;font-size:.85rem;color:var(--grey)">Saving…</span>
+        </div>
+        <div class="toast" id="uploadToast"></div>
+      </form>
+    </section>
+
+    <!-- REQUEST -->
+    <section id="view-request" class="view">
+      <p class="eyebrow">Can't find it?</p>
+      <h2 class="section-title">Request a new policy</h2>
+      <p class="intro">If a policy or SOP doesn't exist yet, add it here. Requests land in the list below for Ethan and Nicky to pick up and write.</p>
+
+      <form class="card-form" id="requestForm">
+        <label for="rq-title">What policy do you need?
+          <input type="text" id="rq-title" required placeholder="e.g. Handling a broken keg">
+        </label>
+        <label for="rq-desc">Details (optional)
+          <span class="hint">Why it's needed, or what should be covered</span>
+          <textarea id="rq-desc" placeholder="Any context that would help whoever writes it..."></textarea>
+        </label>
+        <div class="submit-row">
+          <button type="submit" class="wah-button">Submit request</button>
+          <span id="requestSpinner" style="display:none;font-size:.85rem;color:var(--grey)">Saving…</span>
+        </div>
+        <div class="toast" id="requestToast"></div>
+      </form>
+
+      <h3 style="margin-top:44px;text-transform:uppercase;font-weight:800;font-size:1.05rem">Open requests</h3>
+      <p class="intro" style="margin-bottom:0" id="requestsHint">Ethan and Nicky can mark these in progress or fulfilled once a policy has been written and uploaded.</p>
+      <div class="requests-list" id="openRequests"></div>
+
+      <details style="margin-top:28px;max-width:820px">
+        <summary style="cursor:pointer;font-weight:700;font-size:.88rem;color:var(--grey)">Recently fulfilled</summary>
+        <div class="requests-list" id="fulfilledRequests" style="margin-top:12px"></div>
+      </details>
+    </section>
+
+    <!-- TEAM (admin only) -->
+    <section id="view-people" class="view">
+      <p class="eyebrow">Admin</p>
+      <h2 class="section-title">Team access</h2>
+      <p class="intro">Add a new person and we'll generate them a one-time password to log in with — they'll be asked to set their own the first time they sign in.</p>
+
+      <form class="card-form" id="peopleForm">
+        <label for="pp-name">Name
+          <input type="text" id="pp-name" required placeholder="e.g. Sam">
+        </label>
+        <label for="pp-role">Role
+          <select id="pp-role">
+            <option value="staff">Staff — search, and suggest policies</option>
+            <option value="admin">Admin — same access as Ethan/Nicky</option>
+          </select>
+        </label>
+        <div class="submit-row">
+          <button type="submit" class="wah-button" id="peopleSubmitBtn">Create account</button>
+          <span id="peopleSpinner" style="display:none;font-size:.85rem;color:var(--grey)">Creating…</span>
+        </div>
+        <div class="toast" id="peopleToast"></div>
+        <div class="password-reveal" id="passwordReveal" style="display:none"></div>
+      </form>
+
+      <h3 style="margin-top:36px;text-transform:uppercase;font-weight:800;font-size:1.05rem">Current team</h3>
+      <div class="people-list" id="peopleList"></div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="site">
+  <div class="page">
+    <span><strong style="color:var(--header-cream)">WhataHoot</strong> · Internal policy &amp; SOP hub</span>
+    <span>Staff login required — please don't share your password</span>
+  </div>
+</footer>
+
+<!-- Policy detail modal -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <div id="modalCategory" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    <h3 id="modalTitle"></h3>
+    <p class="modal-meta" id="modalMeta"></p>
+    <div class="modal-body policy-doc" id="modalBody"></div>
+    <div class="close-row">
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a id="modalFileLink" href="#" target="_blank" rel="noopener" style="display:none" class="wah-button wah-button--secondary wah-button--small">Download attachment</a>
+        <button class="wah-button wah-button--secondary wah-button--small" id="modalPrint">Print policy</button>
+        <button class="wah-button wah-button--secondary wah-button--small admin-only" id="modalDelete" style="display:none;border-color:#c0392b;color:#8a2f22">Delete policy</button>
+      </div>
+      <button class="wah-button wah-button--small" id="modalClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Change password modal (voluntary, available any time once logged in) -->
+<div class="modal-backdrop" id="pwModalBackdrop">
+  <div class="modal narrow">
+    <h3>Change your password</h3>
+    <form id="pwChangeForm">
+      <label style="display:block;font-weight:700;font-size:.85rem;margin:14px 0 6px">New password
+        <input type="password" id="pw-new" required minlength="8" style="width:100%;padding:12px 13px;border-radius:6px;border:1px solid rgba(31,38,35,.35);font-size:.98rem;background:var(--cream);color:var(--ink);margin-top:6px" placeholder="At least 8 characters">
+      </label>
+      <label style="display:block;font-weight:700;font-size:.85rem;margin:14px 0 6px">Confirm new password
+        <input type="password" id="pw-confirm" required minlength="8" style="width:100%;padding:12px 13px;border-radius:6px;border:1px solid rgba(31,38,35,.35);font-size:.98rem;background:var(--cream);color:var(--ink);margin-top:6px">
+      </label>
+      <div class="auth-error" id="pwChangeError"></div>
+      <div class="close-row">
+        <button type="button" class="wah-button wah-button--secondary wah-button--small" id="pwModalCancel">Cancel</button>
+        <button type="submit" class="wah-button wah-button--small">Save new password</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Login overlay -->
+<div class="auth-overlay" id="loginScreen">
+  <div class="auth-card">
+    <div class="brand">
+      <span class="owl" aria-hidden="true">🦉</span>
+      <div class="word"><h1>WhataHoot</h1></div>
+    </div>
+    <h2>Policy &amp; SOP Hub</h2>
+    <p class="sub">Staff login</p>
+    <form id="loginForm">
+      <label for="loginName">Who are you?</label>
+      <select id="loginName" required>
+        <option value="">Loading names…</option>
+      </select>
+      <label for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" required placeholder="Your password">
+      <div class="auth-error" id="loginError"></div>
+      <button type="submit" class="wah-button">Log in</button>
+    </form>
+  </div>
+</div>
+
+<!-- Forced password change overlay (first login only) -->
+<div class="auth-overlay" id="forceScreen">
+  <div class="auth-card">
+    <div class="brand">
+      <span class="owl" aria-hidden="true">🦉</span>
+      <div class="word"><h1>WhataHoot</h1></div>
+    </div>
+    <h2>Set your password</h2>
+    <p class="sub">First login — choose a password only you know.</p>
+    <form id="forceForm">
+      <label for="forceNew">New password</label>
+      <input type="password" id="forceNew" required minlength="8" placeholder="At least 8 characters">
+      <label for="forceConfirm">Confirm new password</label>
+      <input type="password" id="forceConfirm" required minlength="8">
+      <div class="auth-error" id="forceError"></div>
+      <button type="submit" class="wah-button">Save and continue</button>
+    </form>
+  </div>
+</div>
+
+<script>
+
+(function(){
+  "use strict";
+
+  // ---- Supabase config ----
+  var SUPABASE_URL = "https://mwstkciuthluvytoqebi.supabase.co";
+  var SUPABASE_KEY = "sb_publishable_mjI-WKbgxFqE9Ux6IvBcpQ_wt99l4mn";
+  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+  }
+
+  var CATEGORIES = ["Bar Operations","Cellar & Stock","Cleaning & Closing","Health & Safety","Food & Drink Service","HR & Conduct","Events & Private Hire","General","Production","Shop","Sales","Marketing"];
+
+  // ---- "Intelligent" search: synonym expansion + fuzzy matching ----
+  var SYNONYM_GROUPS = [
+    ["clean","cleaning","cleaned","wipe","wipe down","sanitise","sanitize","sanitising","mop","mopping","scrub","scrubbing"],
+    ["close","closing","closed","shut","shutting","shut down","shutting down","lock up","locking up","end of night","end of shift","last orders"],
+    ["open","opening","opened","open up","opening up","start of shift","unlock","unlocking"],
+    ["stock","stocktake","stock take","inventory","restock","restocking","stock check","stock levels","stock control"],
+    ["cellar","keg room","keg","kegs","barrel","barrels","barrel store","cask"],
+    ["till","tills","cash register","pos","point of sale","cash up","cashing up","float","cash handling"],
+    ["spill","spillage","spilt","spilled","breakage","breakages","broken glass","broken glassware"],
+    ["allergen","allergens","allergy","allergies","food allergy","intolerance","intolerances"],
+    ["fire","fire safety","fire drill","evacuation","evacuate","emergency exit","fire alarm"],
+    ["first aid","injury","injuries","accident","accidents","incident","incident report"],
+    ["hygiene","food hygiene","hand washing","handwashing","food safety","haccp"],
+    ["glass","glasses","glassware","breakages"],
+    ["delivery","deliveries","goods in","receiving stock","supplier delivery"],
+    ["waste","rubbish","bins","bin","recycling","disposal","food waste"],
+    ["customer","customers","guest","guests","complaint","complaints","feedback"],
+    ["staff","employee","employees","team member","team members","rota","shift","shifts"],
+    ["alcohol","licensing","age verification","id check","challenge 25","proof of age","drunk","intoxicated","refusal","refusing service"],
+    ["security","theft","cctv","till float","suspicious"],
+    ["maintenance","equipment","repair","repairs","fault","faulty","broken equipment"],
+    ["uniform","dress code","appearance","grooming"],
+    ["training","induction","onboarding","new starter"],
+    ["cocktail","cocktails","drink recipe","serve","serving","garnish"],
+    ["wedding","weddings","private hire","event","events","function"],
+    ["distillery","tour","tours","experience","experiences","tasting"],
+    ["holiday","annual leave","sickness","sick leave","absence"],
+    ["complaint","grievance","disciplinary","conduct"]
+  ];
+
+  function expandTerms(query){
+    var tokens = query.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+    var expanded = {};
+    tokens.forEach(function(t){ expanded[t] = true; });
+    tokens.forEach(function(t){
+      SYNONYM_GROUPS.forEach(function(group){
+        var norm = group.map(function(g){ return g.toLowerCase(); });
+        if (norm.indexOf(t) !== -1){
+          group.forEach(function(g){ expanded[g.toLowerCase()] = true; });
+        }
+      });
+    });
+    var q = " " + query.toLowerCase() + " ";
+    SYNONYM_GROUPS.forEach(function(group){
+      group.forEach(function(g){
+        if (g.indexOf(" ") > -1 && q.indexOf(" " + g.toLowerCase() + " ") > -1){
+          group.forEach(function(g2){ expanded[g2.toLowerCase()] = true; });
+        }
+      });
+    });
+    return Object.keys(expanded);
+  }
+
+  var policies = [];
+  var requests = [];
+  var fuse = null;
+  var activeTags = {};
+  var currentProfile = null; // { name, role, must_change_password }
+
+  function isAdmin(){ return !!currentProfile && currentProfile.role === "admin"; }
+
+  var FUSE_KEYS = [
+    { name: "title", weight: 0.45 },
+    { name: "keywords", weight: 0.3 },
+    { name: "tags", weight: 0.15 },
+    { name: "content", weight: 0.1 }
+  ];
+
+  function buildIndex(){
+    fuse = new Fuse(policies, { keys: FUSE_KEYS, threshold: 0.4, ignoreLocation: true, includeScore: true, minMatchCharLength: 2 });
+  }
+
+  function matchesFilters(p){
+    var tagKeys = Object.keys(activeTags).filter(function(k){ return activeTags[k]; });
+    return tagKeys.length === 0 || (p.tags || []).some(function(t){ return activeTags[t]; });
+  }
+
+  function searchPolicies(query){
+    var pool = policies.filter(matchesFilters);
+    if (!query || !query.trim()){
+      return pool.slice().sort(function(a,b){ return new Date(b.created_at) - new Date(a.created_at); });
+    }
+    var localFuse = new Fuse(pool, { keys: FUSE_KEYS, threshold: 0.42, ignoreLocation: true, includeScore: true, minMatchCharLength: 2 });
+
+    var scores = {};
+    localFuse.search(query).forEach(function(r){
+      scores[r.item.id] = Math.min(scores[r.item.id] !== undefined ? scores[r.item.id] : 1, r.score);
+    });
+
+    var terms = expandTerms(query);
+    terms.forEach(function(t){
+      localFuse.search(t).forEach(function(r){
+        var penalised = r.score * 1.08 + 0.03;
+        scores[r.item.id] = Math.min(scores[r.item.id] !== undefined ? scores[r.item.id] : 1, penalised);
+      });
+    });
+
+    var qLower = query.toLowerCase();
+    pool.forEach(function(p){
+      if (p.title.toLowerCase().indexOf(qLower) > -1) scores[p.id] = 0;
+      else if ((p.keywords || "").toLowerCase().indexOf(qLower) > -1) scores[p.id] = Math.min(scores[p.id] !== undefined ? scores[p.id] : 1, 0.02);
+    });
+
+    return Object.keys(scores)
+      .map(function(id){ return { item: pool.find(function(p){ return String(p.id) === String(id); }), score: scores[id] }; })
+      .filter(function(r){ return r.item; })
+      .sort(function(a,b){ return a.score - b.score; })
+      .map(function(r){ return r.item; });
+  }
+
+  // ---- Rendering helpers ----
+  function escapeHtml(str){
+    return String(str == null ? "" : str)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+
+  function formatDate(iso){
+    try{ return new Date(iso).toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" }); }
+    catch(e){ return ""; }
+  }
+
+  function renderCategoryChips(){
+    var el = document.getElementById("categoryChips");
+    el.innerHTML = CATEGORIES.map(function(t){
+      return '<button class="chip-filter' + (activeTags[t] ? " active" : "") + '" data-tag="' + escapeHtml(t) + '">' + escapeHtml(t) + '</button>';
+    }).join("");
+    Array.prototype.forEach.call(el.querySelectorAll(".chip-filter"), function(btn){
+      btn.addEventListener("click", function(){
+        var t = btn.getAttribute("data-tag");
+        activeTags[t] = !activeTags[t];
+        renderCategoryChips();
+        runSearch();
+      });
+    });
+  }
+
+  function snippet(text, len){
+    if (!text) return "";
+    var t = text.replace(/\s+/g," ").trim();
+    return t.length > len ? t.slice(0, len).trim() + "…" : t;
+  }
+
+  function renderResults(list){
+    var cardsEl = document.getElementById("resultsCards");
+    var metaEl = document.getElementById("resultsMeta");
+    metaEl.textContent = list.length + (list.length === 1 ? " policy found" : " policies found");
+
+    if (!list.length){
+      cardsEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1">' +
+        "No matching policy yet. <a id=\"goRequest\">Request one</a>" + (isAdmin() ? ' or <a id="goUpload">upload it</a> if you have the details.' : ".") +
+        "</div>";
+      var goReq = document.getElementById("goRequest");
+      var goUp = document.getElementById("goUpload");
+      if (goReq) goReq.addEventListener("click", function(){ switchView("request"); });
+      if (goUp) goUp.addEventListener("click", function(){ switchView("upload"); });
+      return;
+    }
+
+    cardsEl.innerHTML = list.map(function(p){
+      var tagPills = (p.tags || []).map(function(t){ return '<span class="badge">' + escapeHtml(t) + '</span>'; }).join(" ");
+      return '<div class="card">' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap">' + (tagPills || '<span class="badge">General</span>') + '</div>' +
+        '<h4>' + escapeHtml(p.title) + '</h4>' +
+        '<p class="snippet">' + escapeHtml(snippet(p.content, 150)) + '</p>' +
+        '<div class="meta-row"><span>' + formatDate(p.created_at) + '</span>' + (p.file_url ? '<span>📎 attachment</span>' : '') + '</div>' +
+        '<button class="wah-button wah-button--secondary wah-button--small view-btn" data-id="' + escapeHtml(p.id) + '">View full policy</button>' +
+        '</div>';
+    }).join("");
+
+    Array.prototype.forEach.call(cardsEl.querySelectorAll(".view-btn"), function(btn){
+      btn.addEventListener("click", function(){ openModal(btn.getAttribute("data-id")); });
+    });
+  }
+
+  // ---- Turn plain extracted/pasted text into a formatted, branded policy page ----
+  var BULLET_RE = /^[-*•‣▪]\s+/;
+  var NUM_RE = /^\d+[\.\)]\s+/;
+
+  function formatPolicyHtml(text, title){
+    if (!text || !text.trim()) return "";
+    var lines = text.replace(/\r\n?/g, "\n").split("\n").map(function(l){ return l.trim(); });
+
+    // drop a leading line that just repeats the title (already shown above the body)
+    var firstIdx = -1;
+    for (var k = 0; k < lines.length; k++){ if (lines[k]){ firstIdx = k; break; } }
+    if (firstIdx > -1 && title && lines[firstIdx].toLowerCase() === title.trim().toLowerCase()){
+      lines.splice(firstIdx, 1);
+    }
+
+    var html = [];
+    var buf = [];
+    function flush(){
+      if (buf.length){ html.push("<p>" + escapeHtml(buf.join(" ")) + "</p>"); buf = []; }
+    }
+
+    var i = 0;
+    while (i < lines.length){
+      var line = lines[i];
+      if (!line){ flush(); i++; continue; }
+
+      if (BULLET_RE.test(line)){
+        flush();
+        var bItems = [];
+        while (i < lines.length && BULLET_RE.test(lines[i])){ bItems.push(lines[i].replace(BULLET_RE, "")); i++; }
+        html.push("<ul>" + bItems.map(function(it){ return "<li>" + escapeHtml(it) + "</li>"; }).join("") + "</ul>");
+        continue;
+      }
+
+      if (NUM_RE.test(line)){
+        flush();
+        var nItems = [];
+        while (i < lines.length && NUM_RE.test(lines[i])){ nItems.push(lines[i].replace(NUM_RE, "")); i++; }
+        html.push("<ol>" + nItems.map(function(it){ return "<li>" + escapeHtml(it) + "</li>"; }).join("") + "</ol>");
+        continue;
+      }
+
+      var isShort = line.length <= 60;
+      var endsColon = /:$/.test(line);
+      var isAllCaps = line === line.toUpperCase() && /[A-Z]/.test(line) && line.replace(/[^A-Za-z]/g, "").length >= 3;
+      if (isShort && (endsColon || isAllCaps)){
+        flush();
+        html.push("<h4>" + escapeHtml(line.replace(/:$/, "")) + "</h4>");
+        i++;
+        continue;
+      }
+
+      buf.push(line);
+      i++;
+    }
+    flush();
+    return html.join("");
+  }
+
+  function openModal(id){
+    var p = policies.find(function(x){ return String(x.id) === String(id); });
+    if (!p) return;
+    var catEl = document.getElementById("modalCategory");
+    catEl.innerHTML = (p.tags || []).map(function(t){ return '<span class="badge">' + escapeHtml(t) + '</span>'; }).join(" ") || '<span class="badge">General</span>';
+    document.getElementById("modalTitle").textContent = p.title;
+    document.getElementById("modalMeta").textContent = "Added " + formatDate(p.created_at) + (p.uploaded_by ? " by " + p.uploaded_by : "");
+    var bodyEl = document.getElementById("modalBody");
+    var formatted = formatPolicyHtml(p.content, p.title);
+    bodyEl.innerHTML = formatted || ('<p class="doc-fallback">' + escapeHtml(p.content || "") + "</p>");
+    var link = document.getElementById("modalFileLink");
+    if (p.file_url){ link.style.display = "inline-flex"; link.href = p.file_url; }
+    else { link.style.display = "none"; }
+    var delBtn = document.getElementById("modalDelete");
+    delBtn.setAttribute("data-id", p.id);
+    delBtn.style.display = isAdmin() ? "inline-flex" : "none";
+    document.getElementById("modalBackdrop").classList.add("show");
+  }
+
+  function closeModal(){ document.getElementById("modalBackdrop").classList.remove("show"); }
+
+  async function deletePolicyFromModal(){
+    var id = document.getElementById("modalDelete").getAttribute("data-id");
+    var p = policies.find(function(x){ return String(x.id) === String(id); });
+    if (!p) return;
+    if (!confirm('Delete "' + p.title + '"? This can\'t be undone.')) return;
+    var res = await sb.from("policies").delete().eq("id", id);
+    if (res.error){
+      alert("Couldn't delete that policy: " + res.error.message);
+      return;
+    }
+    closeModal();
+    await loadPolicies();
+  }
+
+  function runSearch(){
+    var q = document.getElementById("searchInput").value;
+    renderResults(searchPolicies(q));
+  }
+
+  // ---- Requests ----
+  function renderRequests(){
+    var open = requests.filter(function(r){ return r.status !== "fulfilled"; })
+      .sort(function(a,b){ return new Date(b.created_at) - new Date(a.created_at); });
+    var fulfilled = requests.filter(function(r){ return r.status === "fulfilled"; })
+      .sort(function(a,b){ return new Date(b.updated_at) - new Date(a.updated_at); });
+
+    var openEl = document.getElementById("openRequests");
+    openEl.innerHTML = open.length ? open.map(requestRowHtml).join("") : '<div class="empty-state">No open requests right now.</div>';
+
+    var fulEl = document.getElementById("fulfilledRequests");
+    fulEl.innerHTML = fulfilled.length ? fulfilled.map(requestRowHtml).join("") : '<div class="empty-state">Nothing marked fulfilled yet.</div>';
+
+    Array.prototype.forEach.call(document.querySelectorAll(".status-select"), function(sel){
+      sel.addEventListener("change", function(){ updateRequestStatus(sel.getAttribute("data-id"), sel.value); });
+    });
+
+    document.getElementById("requestsHint").textContent = isAdmin()
+      ? "Mark these in progress or fulfilled once a policy has been written and uploaded."
+      : "Ethan and Nicky can mark these in progress or fulfilled once a policy has been written and uploaded.";
+  }
+
+  function requestRowHtml(r){
+    var statusLabel = { pending: "Pending", in_progress: "In progress", fulfilled: "Fulfilled" }[r.status] || r.status;
+    var controls = isAdmin()
+      ? '<select class="status-select" data-id="' + escapeHtml(r.id) + '">' +
+          ['pending','in_progress','fulfilled'].map(function(s){
+            return '<option value="' + s + '"' + (s === r.status ? " selected" : "") + '>' + ({pending:"Pending",in_progress:"In progress",fulfilled:"Fulfilled"})[s] + '</option>';
+          }).join("") +
+        '</select>'
+      : '';
+    return '<div class="request-row">' +
+      '<div class="rq-main">' +
+        '<p class="rq-title">' + escapeHtml(r.title) + '</p>' +
+        (r.description ? '<p class="rq-desc">' + escapeHtml(r.description) + '</p>' : '') +
+        '<p class="rq-meta">Requested ' + formatDate(r.created_at) + (r.requested_by ? " by " + escapeHtml(r.requested_by) : "") + '</p>' +
+      '</div>' +
+      '<div class="rq-actions">' +
+        '<span class="status-pill status-' + r.status + '">' + statusLabel + '</span>' +
+        controls +
+      '</div>' +
+    '</div>';
+  }
+
+  async function updateRequestStatus(id, status){
+    await sb.from("policy_requests").update({ status: status, updated_at: new Date().toISOString() }).eq("id", id);
+    await loadRequests();
+  }
+
+  // ---- Data loading ----
+  async function loadPolicies(){
+    var res = await sb.from("policies").select("*").order("created_at", { ascending: false });
+    policies = res.data || [];
+    buildIndex();
+    runSearch();
+  }
+
+  async function loadRequests(){
+    var res = await sb.from("policy_requests").select("*").order("created_at", { ascending: false });
+    requests = res.data || [];
+    renderRequests();
+  }
+
+  // ---- Views / tabs ----
+  function switchView(name){
+    Array.prototype.forEach.call(document.querySelectorAll(".view"), function(v){ v.classList.remove("active"); });
+    document.getElementById("view-" + name).classList.add("active");
+    Array.prototype.forEach.call(document.querySelectorAll("nav.tabs button"), function(b){
+      b.classList.toggle("active", b.getAttribute("data-view") === name);
+    });
+  }
+
+  // ---- PDF text extraction ----
+  var MAX_EXTRACT_CHARS = 60000;
+
+  async function extractPdfText(file){
+    var buffer = await file.arrayBuffer();
+    var pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+    var text = "";
+    for (var i = 1; i <= pdf.numPages; i++){
+      var page = await pdf.getPage(i);
+      var content = await page.getTextContent();
+      var lastY = null;
+      var pageText = "";
+      content.items.forEach(function(item){
+        var y = item.transform && item.transform.length === 6 ? item.transform[5] : null;
+        if (lastY !== null && y !== null && Math.abs(y - lastY) > 2){ pageText += "\n"; }
+        else if (pageText){ pageText += " "; }
+        pageText += item.str;
+        if (y !== null) lastY = y;
+      });
+      text += pageText + "\n\n";
+      if (text.length > MAX_EXTRACT_CHARS) break;
+    }
+    text = text.replace(/[ \t]+/g, " ").replace(/ *\n */g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+    if (text.length > MAX_EXTRACT_CHARS) text = text.slice(0, MAX_EXTRACT_CHARS) + "\n\n[Truncated — see attached PDF for the full document]";
+    return text;
+  }
+
+  function titleFromFilename(name){
+    var base = name.replace(/\.[^/.]+$/, "").replace(/[-_]+/g, " ").trim();
+    return base.replace(/\w\S*/g, function(w){ return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(); });
+  }
+
+  function initPdfHandling(){
+    var fileInput = document.getElementById("up-file");
+    var statusEl = document.getElementById("pdfStatus");
+    var contentEl = document.getElementById("up-content");
+    var titleEl = document.getElementById("up-title");
+    var submitBtn = document.getElementById("uploadSubmitBtn");
+
+    fileInput.addEventListener("change", async function(){
+      var file = fileInput.files && fileInput.files[0];
+      if (!file){ statusEl.textContent = ""; return; }
+      if (!titleEl.value.trim()) titleEl.value = titleFromFilename(file.name);
+
+      var isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+      if (!isPdf){
+        statusEl.textContent = "Attached — this file type isn't auto-read, so add the text below so it's searchable.";
+        return;
+      }
+      if (!window.pdfjsLib){
+        statusEl.textContent = "Couldn't load the PDF reader — please paste the text below manually.";
+        return;
+      }
+
+      statusEl.textContent = "Extracting text from PDF…";
+      submitBtn.disabled = true;
+      try{
+        var text = await extractPdfText(file);
+        if (!text){
+          statusEl.textContent = "Couldn't find selectable text in this PDF (it may be a scan) — please paste the text below manually.";
+        } else {
+          var replace = true;
+          if (contentEl.value.trim()){
+            replace = confirm("Replace the existing text in the box below with text extracted from this PDF?");
+          }
+          if (replace) contentEl.value = text;
+          statusEl.textContent = "Extracted " + text.length.toLocaleString() + " characters from the PDF — check it below before saving.";
+        }
+      }catch(err){
+        statusEl.textContent = "Couldn't read that PDF automatically (" + (err && err.message ? err.message : "error") + ") — please paste the text below manually.";
+      }finally{
+        submitBtn.disabled = false;
+      }
+    });
+  }
+
+  // ---- Forms: upload / request ----
+  async function uploadFile(file){
+    var safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    var path = Date.now() + "-" + safeName;
+    var up = await sb.storage.from("policy-files").upload(path, file);
+    if (up.error) throw up.error;
+    var urlRes = sb.storage.from("policy-files").getPublicUrl(path);
+    return { path: path, url: urlRes.data.publicUrl, name: file.name };
+  }
+
+  function showToast(elId, msg, ok){
+    var el = document.getElementById(elId);
+    el.textContent = msg;
+    el.className = "toast show " + (ok ? "ok" : "err");
+    setTimeout(function(){ el.classList.remove("show"); }, 5000);
+  }
+
+  var selectedUploadTags = {};
+
+  function renderTagPicker(){
+    var el = document.getElementById("tagPicker");
+    el.innerHTML = CATEGORIES.map(function(t){
+      return '<button type="button" class="chip-filter' + (selectedUploadTags[t] ? " active" : "") + '" data-tag="' + escapeHtml(t) + '">' + escapeHtml(t) + '</button>';
+    }).join("");
+    Array.prototype.forEach.call(el.querySelectorAll(".chip-filter"), function(btn){
+      btn.addEventListener("click", function(){
+        var t = btn.getAttribute("data-tag");
+        selectedUploadTags[t] = !selectedUploadTags[t];
+        renderTagPicker();
+      });
+    });
+  }
+
+  function initForms(){
+    renderTagPicker();
+
+    document.getElementById("uploadForm").addEventListener("submit", async function(e){
+      e.preventDefault();
+      var fileInput = document.getElementById("up-file");
+      var hasFile = fileInput.files && fileInput.files[0];
+      var hasContent = document.getElementById("up-content").value.trim();
+      if (!hasFile && !hasContent){
+        showToast("uploadToast", "Add a PDF, or paste the policy text, before saving.", false);
+        return;
+      }
+      var spinner = document.getElementById("uploadSpinner");
+      spinner.style.display = "inline";
+      try{
+        var fileInfo = null;
+        if (hasFile){ fileInfo = await uploadFile(fileInput.files[0]); }
+        var chosenTags = Object.keys(selectedUploadTags).filter(function(t){ return selectedUploadTags[t]; });
+        var payload = {
+          title: document.getElementById("up-title").value.trim(),
+          tags: chosenTags,
+          keywords: document.getElementById("up-keywords").value.trim(),
+          content: document.getElementById("up-content").value.trim(),
+          uploaded_by: currentProfile ? currentProfile.name : null,
+          file_name: fileInfo ? fileInfo.name : null,
+          file_path: fileInfo ? fileInfo.path : null,
+          file_url: fileInfo ? fileInfo.url : null
+        };
+        var res = await sb.from("policies").insert(payload);
+        if (res.error) throw res.error;
+        showToast("uploadToast", "Policy added — it's now searchable.", true);
+        document.getElementById("uploadForm").reset();
+        document.getElementById("pdfStatus").textContent = "";
+        selectedUploadTags = {};
+        renderTagPicker();
+        await loadPolicies();
+        setTimeout(function(){ switchView("search"); }, 700);
+      }catch(err){
+        showToast("uploadToast", "Something went wrong: " + (err && err.message ? err.message : err), false);
+      }finally{
+        spinner.style.display = "none";
+      }
+    });
+
+    document.getElementById("requestForm").addEventListener("submit", async function(e){
+      e.preventDefault();
+      var spinner = document.getElementById("requestSpinner");
+      spinner.style.display = "inline";
+      try{
+        var payload = {
+          title: document.getElementById("rq-title").value.trim(),
+          description: document.getElementById("rq-desc").value.trim(),
+          requested_by: currentProfile ? currentProfile.name : null,
+          status: "pending"
+        };
+        var res = await sb.from("policy_requests").insert(payload);
+        if (res.error) throw res.error;
+        showToast("requestToast", "Request submitted — it'll show in the list below.", true);
+        document.getElementById("requestForm").reset();
+        await loadRequests();
+      }catch(err){
+        showToast("requestToast", "Something went wrong: " + (err && err.message ? err.message : err), false);
+      }finally{
+        spinner.style.display = "none";
+      }
+    });
+  }
+
+  // ==================== AUTH ====================
+  function slugEmail(name){
+    var slug = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
+    return slug + "@staff.whatahoot.internal";
+  }
+
+  function showAuthError(elId, msg){
+    var el = document.getElementById(elId);
+    el.textContent = msg;
+    el.classList.add("show");
+  }
+  function hideAuthError(elId){ document.getElementById(elId).classList.remove("show"); }
+
+  async function populateLoginNames(){
+    var sel = document.getElementById("loginName");
+    try{
+      var res = await sb.from("policy_hub_staff_names").select("name").order("name");
+      var names = (res.data || []).map(function(r){ return r.name; });
+      sel.innerHTML = '<option value="">Select your name…</option>' + names.map(function(n){
+        return '<option value="' + escapeHtml(n) + '">' + escapeHtml(n) + '</option>';
+      }).join("");
+    }catch(err){
+      sel.innerHTML = '<option value="">Couldn\'t load names — refresh to try again</option>';
+    }
+  }
+
+  function showLoginScreen(){
+    document.getElementById("forceScreen").classList.remove("show");
+    document.getElementById("loginScreen").classList.add("show");
+    document.getElementById("appMain").style.display = "none";
+    document.getElementById("mainTabs").style.display = "none";
+    document.getElementById("userBox").style.display = "none";
+    populateLoginNames();
+  }
+
+  function showForceScreen(){
+    document.getElementById("loginScreen").classList.remove("show");
+    document.getElementById("forceScreen").classList.add("show");
+    document.getElementById("appMain").style.display = "none";
+  }
+
+  async function enterApp(){
+    document.getElementById("loginScreen").classList.remove("show");
+    document.getElementById("forceScreen").classList.remove("show");
+    document.getElementById("appMain").style.display = "block";
+    document.getElementById("mainTabs").style.display = "flex";
+    document.getElementById("userBox").style.display = "flex";
+
+    document.getElementById("whoLabel").textContent = currentProfile.name;
+    var badge = document.getElementById("roleBadge");
+    badge.textContent = currentProfile.role === "admin" ? "Admin" : "Staff";
+    badge.className = "role-badge" + (currentProfile.role === "admin" ? "" : " staff");
+
+    Array.prototype.forEach.call(document.querySelectorAll(".admin-only"), function(el){
+      el.style.display = isAdmin() ? "inline-block" : "none";
+    });
+    // if a staff member happened to be on an admin-only view, bounce them to search
+    var uploadBtn = document.querySelector('[data-view="upload"]');
+    var activeAdminView = document.getElementById("view-upload").classList.contains("active") ||
+      document.getElementById("view-people").classList.contains("active");
+    if (!isAdmin() && activeAdminView) switchView("search");
+
+    await Promise.all([loadPolicies(), loadRequests()]);
+    if (isAdmin()) loadPeople();
+  }
+
+  async function loadProfileAndEnter(){
+    var userRes = await sb.auth.getUser();
+    var user = userRes.data && userRes.data.user;
+    if (!user){ showLoginScreen(); return; }
+
+    var res = await sb.from("policy_hub_profiles").select("name,role,must_change_password").eq("id", user.id).single();
+    if (res.error || !res.data){
+      // no profile row somehow - sign them back out rather than get stuck
+      await sb.auth.signOut();
+      showLoginScreen();
+      return;
+    }
+    currentProfile = res.data;
+    if (currentProfile.must_change_password){ showForceScreen(); }
+    else { await enterApp(); }
+  }
+
+  function initAuthForms(){
+    document.getElementById("loginForm").addEventListener("submit", async function(e){
+      e.preventDefault();
+      hideAuthError("loginError");
+      var name = document.getElementById("loginName").value;
+      var pwd = document.getElementById("loginPassword").value;
+      if (!name || !pwd){ showAuthError("loginError", "Choose your name and enter your password."); return; }
+      var submitBtn = e.target.querySelector("button[type=submit]");
+      submitBtn.disabled = true;
+      try{
+        var res = await sb.auth.signInWithPassword({ email: slugEmail(name), password: pwd });
+        if (res.error){ showAuthError("loginError", "That name and password don't match — try again."); return; }
+        document.getElementById("loginPassword").value = "";
+        await loadProfileAndEnter();
+      }catch(err){
+        showAuthError("loginError", "Something went wrong logging in. Please try again.");
+      }finally{
+        submitBtn.disabled = false;
+      }
+    });
+
+    document.getElementById("forceForm").addEventListener("submit", async function(e){
+      e.preventDefault();
+      hideAuthError("forceError");
+      var pwd1 = document.getElementById("forceNew").value;
+      var pwd2 = document.getElementById("forceConfirm").value;
+      if (pwd1.length < 8){ showAuthError("forceError", "Password must be at least 8 characters."); return; }
+      if (pwd1 !== pwd2){ showAuthError("forceError", "Passwords don't match."); return; }
+      var submitBtn = e.target.querySelector("button[type=submit]");
+      submitBtn.disabled = true;
+      try{
+        var upd = await sb.auth.updateUser({ password: pwd1 });
+        if (upd.error){ showAuthError("forceError", upd.error.message); return; }
+        var userRes = await sb.auth.getUser();
+        await sb.from("policy_hub_profiles").update({ must_change_password: false, updated_at: new Date().toISOString() }).eq("id", userRes.data.user.id);
+        currentProfile.must_change_password = false;
+        document.getElementById("forceForm").reset();
+        await enterApp();
+      }catch(err){
+        showAuthError("forceError", "Something went wrong — please try again.");
+      }finally{
+        submitBtn.disabled = false;
+      }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", async function(){
+      await sb.auth.signOut();
+      currentProfile = null;
+      window.location.reload();
+    });
+
+    document.getElementById("openChangePassword").addEventListener("click", function(){
+      document.getElementById("pw-new").value = "";
+      document.getElementById("pw-confirm").value = "";
+      hideAuthError("pwChangeError");
+      document.getElementById("pwModalBackdrop").classList.add("show");
+    });
+    document.getElementById("pwModalCancel").addEventListener("click", function(){
+      document.getElementById("pwModalBackdrop").classList.remove("show");
+    });
+    document.getElementById("pwChangeForm").addEventListener("submit", async function(e){
+      e.preventDefault();
+      hideAuthError("pwChangeError");
+      var pwd1 = document.getElementById("pw-new").value;
+      var pwd2 = document.getElementById("pw-confirm").value;
+      if (pwd1.length < 8){ showAuthError("pwChangeError", "Password must be at least 8 characters."); return; }
+      if (pwd1 !== pwd2){ showAuthError("pwChangeError", "Passwords don't match."); return; }
+      try{
+        var upd = await sb.auth.updateUser({ password: pwd1 });
+        if (upd.error){ showAuthError("pwChangeError", upd.error.message); return; }
+        document.getElementById("pwModalBackdrop").classList.remove("show");
+      }catch(err){
+        showAuthError("pwChangeError", "Something went wrong — please try again.");
+      }
+    });
+  }
+
+  // ---- Admin: team management ----
+  async function loadPeople(){
+    var res = await sb.from("policy_hub_profiles").select("id,name,role,must_change_password").order("name");
+    var list = res.data || [];
+    var el = document.getElementById("peopleList");
+    el.innerHTML = list.map(function(p){
+      var isSelf = currentProfile && p.name === currentProfile.name;
+      var removeBtn = isSelf ? "" :
+        '<button type="button" class="wah-button wah-button--secondary wah-button--small remove-person-btn" data-id="' + escapeHtml(p.id) + '" data-name="' + escapeHtml(p.name) + '" style="border-color:#c0392b;color:#8a2f22">Remove</button>';
+      return '<div class="people-row">' +
+        '<span class="name">' + escapeHtml(p.name) + (isSelf ? " (you)" : "") + '</span>' +
+        '<span class="role-badge' + (p.role === "admin" ? "" : " staff") + '">' + (p.role === "admin" ? "Admin" : "Staff") + '</span>' +
+        '<span class="flags">' + (p.must_change_password ? "Hasn't set their own password yet" : "Active") + '</span>' +
+        removeBtn +
+        '</div>';
+    }).join("") || '<div class="empty-state">No one yet.</div>';
+
+    Array.prototype.forEach.call(el.querySelectorAll(".remove-person-btn"), function(btn){
+      btn.addEventListener("click", function(){ removePerson(btn.getAttribute("data-id"), btn.getAttribute("data-name")); });
+    });
+  }
+
+  async function removePerson(userId, name){
+    if (!confirm('Remove ' + name + '\'s account? They will no longer be able to log in.')) return;
+    try{
+      var sessionRes = await sb.auth.getSession();
+      var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
+      if (!token) throw new Error("Your session has expired — please log in again.");
+
+      var resp = await fetch(SUPABASE_URL + "/functions/v1/delete-staff-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "apikey": SUPABASE_KEY },
+        body: JSON.stringify({ userId: userId })
+      });
+      var out = await resp.json();
+      if (!resp.ok){ throw new Error(out.error || "Could not remove that account."); }
+      showToast("peopleToast", name + "'s account has been removed.", true);
+      await loadPeople();
+    }catch(err){
+      showToast("peopleToast", err.message || "Something went wrong.", false);
+    }
+  }
+
+  function initPeopleForm(){
+    document.getElementById("peopleForm").addEventListener("submit", async function(e){
+      e.preventDefault();
+      var name = document.getElementById("pp-name").value.trim();
+      var role = document.getElementById("pp-role").value;
+      if (!name){ showToast("peopleToast", "Enter a name.", false); return; }
+      var spinner = document.getElementById("peopleSpinner");
+      var revealEl = document.getElementById("passwordReveal");
+      revealEl.style.display = "none";
+      spinner.style.display = "inline";
+      try{
+        var sessionRes = await sb.auth.getSession();
+        var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
+        if (!token) throw new Error("Your session has expired — please log in again.");
+
+        var resp = await fetch(SUPABASE_URL + "/functions/v1/create-staff-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "apikey": SUPABASE_KEY },
+          body: JSON.stringify({ name: name, role: role })
+        });
+        var out = await resp.json();
+        if (!resp.ok){ throw new Error(out.error || "Could not create the account."); }
+
+        showToast("peopleToast", "Account created for " + out.name + ".", true);
+        revealEl.style.display = "block";
+        revealEl.innerHTML = "One-time password for <strong>" + escapeHtml(out.name) + "</strong> — share this with them now, it won't be shown again:<br>" +
+          "<code>" + escapeHtml(out.password) + "</code><br>They'll be asked to set their own password the first time they log in.";
+        document.getElementById("peopleForm").reset();
+        await loadPeople();
+      }catch(err){
+        showToast("peopleToast", err.message || "Something went wrong.", false);
+      }finally{
+        spinner.style.display = "none";
+      }
+    });
+  }
+
+  // ---- Init ----
+  document.addEventListener("DOMContentLoaded", function(){
+    Array.prototype.forEach.call(document.querySelectorAll("nav.tabs button"), function(btn){
+      btn.addEventListener("click", function(){ switchView(btn.getAttribute("data-view")); });
+    });
+    document.getElementById("searchInput").addEventListener("input", runSearch);
+    document.getElementById("modalClose").addEventListener("click", closeModal);
+    document.getElementById("modalDelete").addEventListener("click", deletePolicyFromModal);
+    document.getElementById("modalPrint").addEventListener("click", function(){ window.print(); });
+    document.getElementById("modalBackdrop").addEventListener("click", function(e){
+      if (e.target === document.getElementById("modalBackdrop")) closeModal();
+    });
+    document.addEventListener("keydown", function(e){ if (e.key === "Escape") closeModal(); });
+
+    renderCategoryChips();
+    initForms();
+    initPdfHandling();
+    initAuthForms();
+    initPeopleForm();
+
+    showLoginScreen();
+    loadProfileAndEnter();
+  });
+})();
+
+</script>
+</body>
+</html>
