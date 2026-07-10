@@ -96,6 +96,10 @@
   .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:14px}
   .card{border:1px solid rgba(var(--ink-rgb),.15);border-radius:var(--radius-card);background:var(--white);box-shadow:0 4px 5px rgba(var(--ink-rgb),.05);padding:20px 22px;display:flex;flex-direction:column;gap:8px;min-width:0}
   .card .badge{display:inline-block;align-self:flex-start;text-transform:uppercase;letter-spacing:.07em;font-size:.68rem;font-weight:800;color:var(--orange-dark);background:var(--warm-grey);padding:4px 10px;border-radius:var(--radius-pill)}
+  .badge-type-policy{background:var(--ink) !important;color:var(--header-cream) !important}
+  .badge-type-sop{background:var(--white) !important;color:var(--orange-dark) !important;border:1.5px solid var(--orange-dark)}
+  .results-group-title{margin:32px 0 16px;text-transform:uppercase;font-weight:800;font-size:1.1rem;letter-spacing:.02em;color:var(--ink);border-bottom:2px solid var(--warm-grey);padding-bottom:8px}
+  .results-group:first-of-type .results-group-title{margin-top:8px}
   .card h4{margin:2px 0 0;font-weight:800;font-size:1.15rem}
   .card p.snippet{margin:0;font-size:.92rem;color:#4a524e;flex:1}
   .card .meta-row{font-size:.76rem;color:var(--grey);display:flex;justify-content:space-between;align-items:center;margin-top:4px}
@@ -612,7 +616,7 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     </div>
     <nav class="tabs" id="mainTabs" style="display:none">
       <button data-view="search" class="active">Search</button>
-      <button data-view="upload" class="admin-only">Add a policy</button>
+      <button data-view="upload" class="sop-creator-only">Add a policy</button>
       <button data-view="request">Request a policy</button>
       <button data-view="people" class="admin-only">Team</button>
     </nav>
@@ -644,7 +648,17 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
       <div class="chips" id="categoryChips"></div>
 
       <p class="results-meta" id="resultsMeta"></p>
-      <div class="cards" id="resultsCards"></div>
+      <div class="empty-state" id="resultsEmpty" style="display:none"></div>
+
+      <div class="results-group" id="policiesGroup" style="display:none">
+        <h3 class="results-group-title">Policies</h3>
+        <div class="cards" id="policiesCards"></div>
+      </div>
+
+      <div class="results-group" id="sopsGroup" style="display:none">
+        <h3 class="results-group-title">Standard Operating Procedures (SOPs)</h3>
+        <div class="cards" id="sopsCards"></div>
+      </div>
     </section>
 
     <!-- ADD (admin only) -->
@@ -680,10 +694,12 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
           <input type="text" id="up-title" required placeholder="e.g. Shutting Down the Bar">
         </label>
 
-        <label>Document type
-          <span class="hint">Policies are the overarching rules. SOPs are step-by-step procedures that sit under a parent policy.</span>
-        </label>
-        <div class="chips" id="docTypeChips" style="margin-top:4px"></div>
+        <div id="docTypeSection">
+          <label>Document type
+            <span class="hint">Policies are the overarching rules. SOPs are step-by-step procedures that sit under a parent policy.</span>
+          </label>
+          <div class="chips" id="docTypeChips" style="margin-top:4px"></div>
+        </div>
 
         <label for="up-parent" id="up-parent-wrap" style="display:none">Parent policy
           <span class="hint">Which policy does this SOP belong to?</span>
@@ -762,6 +778,7 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
         <label for="pp-role">Role
           <select id="pp-role">
             <option value="staff">Staff — search, and suggest policies</option>
+            <option value="sop_staff">Staff with SOP permission — can build/upload SOPs, not policies or users</option>
             <option value="admin">Admin — same access as Ethan/Nicky</option>
           </select>
         </label>
@@ -966,6 +983,9 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
   var currentProfile = null; // { name, role, must_change_password }
 
   function isAdmin(){ return !!currentProfile && currentProfile.role === "admin"; }
+  function isSopOnlyStaff(){ return !!currentProfile && currentProfile.role === "sop_staff"; }
+  function canManageSops(){ return !!currentProfile && (currentProfile.role === "admin" || currentProfile.role === "sop_staff"); }
+  function roleLabel(role){ return role === "admin" ? "Admin" : (role === "sop_staff" ? "SOP Staff" : "Staff"); }
 
   var FUSE_KEYS = [
     { name: "title", weight: 0.45 },
@@ -1077,15 +1097,45 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     return t.length > len ? t.slice(0, len).trim() + "…" : t;
   }
 
+  function resultCardHtml(p){
+    var tagPills = (p.tags || []).map(function(t){ return '<span class="badge">' + escapeHtml(t) + '</span>'; }).join(" ");
+    var isSop = p.doc_type === "sop";
+    var typeBadge = '<span class="badge ' + (isSop ? "badge-type-sop" : "badge-type-policy") + '">' + (isSop ? "SOP" : "Policy") + '</span>';
+    var newBadge = isNewSinceLastLogin(p) ? '<span class="badge badge-new">New</span>' : '';
+    var updatedBadge = p.needs_review ? '<span class="badge badge-updated">Updated</span>' : '';
+    var hierarchyLine = "";
+    if (isSop && p.parent_policy_id){
+      var parentP = policies.find(function(x){ return String(x.id) === String(p.parent_policy_id); });
+      if (parentP) hierarchyLine = '<p class="snippet" style="color:var(--grey);font-size:.78rem;margin:-4px 0 0">Part of: ' + escapeHtml(parentP.title) + '</p>';
+    } else if (!isSop) {
+      var childCount = policies.filter(function(x){ return x.doc_type === "sop" && String(x.parent_policy_id) === String(p.id); }).length;
+      if (childCount) hierarchyLine = '<p class="snippet" style="color:var(--grey);font-size:.78rem;margin:-4px 0 0">' + childCount + (childCount === 1 ? " linked SOP" : " linked SOPs") + '</p>';
+    }
+    return '<div class="card">' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap">' + newBadge + updatedBadge + typeBadge + (tagPills || '<span class="badge">General</span>') + '</div>' +
+      '<h4>' + escapeHtml(p.title) + '</h4>' +
+      hierarchyLine +
+      '<p class="snippet">' + escapeHtml(snippet(p.content, 150)) + '</p>' +
+      '<div class="meta-row"><span>' + formatDate(p.created_at) + '</span>' + (p.file_url ? '<span>📎 attachment</span>' : '') + '</div>' +
+      '<button class="wah-button wah-button--secondary wah-button--small view-btn" data-id="' + escapeHtml(p.id) + '">View full policy</button>' +
+      '</div>';
+  }
+
   function renderResults(list){
-    var cardsEl = document.getElementById("resultsCards");
     var metaEl = document.getElementById("resultsMeta");
-    metaEl.textContent = list.length + (list.length === 1 ? " policy found" : " policies found");
+    var emptyEl = document.getElementById("resultsEmpty");
+    var policiesGroup = document.getElementById("policiesGroup");
+    var sopsGroup = document.getElementById("sopsGroup");
+    var policiesCardsEl = document.getElementById("policiesCards");
+    var sopsCardsEl = document.getElementById("sopsCards");
+
+    metaEl.textContent = list.length + (list.length === 1 ? " result found" : " results found");
 
     if (!list.length){
-      cardsEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1">' +
-        "No matching policy yet. <a id=\"goRequest\">Request one</a>" + (isAdmin() ? ' or <a id="goUpload">upload it</a> if you have the details.' : ".") +
-        "</div>";
+      policiesGroup.style.display = "none";
+      sopsGroup.style.display = "none";
+      emptyEl.style.display = "block";
+      emptyEl.innerHTML = "No matching policy yet. <a id=\"goRequest\">Request one</a>" + (isAdmin() ? ' or <a id="goUpload">add it</a> if you have the details.' : ".");
       var goReq = document.getElementById("goRequest");
       var goUp = document.getElementById("goUpload");
       if (goReq) goReq.addEventListener("click", function(){ switchView("request"); });
@@ -1093,30 +1143,28 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
       return;
     }
 
-    cardsEl.innerHTML = list.map(function(p){
-      var tagPills = (p.tags || []).map(function(t){ return '<span class="badge">' + escapeHtml(t) + '</span>'; }).join(" ");
-      var typeBadge = '<span class="badge">' + ((p.doc_type === "sop") ? "SOP" : "Policy") + '</span>';
-      var newBadge = isNewSinceLastLogin(p) ? '<span class="badge badge-new">New</span>' : '';
-      var updatedBadge = p.needs_review ? '<span class="badge badge-updated">Updated</span>' : '';
-      var hierarchyLine = "";
-      if (p.doc_type === "sop" && p.parent_policy_id){
-        var parentP = policies.find(function(x){ return String(x.id) === String(p.parent_policy_id); });
-        if (parentP) hierarchyLine = '<p class="snippet" style="color:var(--grey);font-size:.78rem;margin:-4px 0 0">Part of: ' + escapeHtml(parentP.title) + '</p>';
-      } else if (p.doc_type !== "sop") {
-        var childCount = policies.filter(function(x){ return x.doc_type === "sop" && String(x.parent_policy_id) === String(p.id); }).length;
-        if (childCount) hierarchyLine = '<p class="snippet" style="color:var(--grey);font-size:.78rem;margin:-4px 0 0">' + childCount + (childCount === 1 ? " linked SOP" : " linked SOPs") + '</p>';
-      }
-      return '<div class="card">' +
-        '<div style="display:flex;gap:6px;flex-wrap:wrap">' + newBadge + updatedBadge + typeBadge + (tagPills || '<span class="badge">General</span>') + '</div>' +
-        '<h4>' + escapeHtml(p.title) + '</h4>' +
-        hierarchyLine +
-        '<p class="snippet">' + escapeHtml(snippet(p.content, 150)) + '</p>' +
-        '<div class="meta-row"><span>' + formatDate(p.created_at) + '</span>' + (p.file_url ? '<span>📎 attachment</span>' : '') + '</div>' +
-        '<button class="wah-button wah-button--secondary wah-button--small view-btn" data-id="' + escapeHtml(p.id) + '">View full policy</button>' +
-        '</div>';
-    }).join("");
+    emptyEl.style.display = "none";
 
-    Array.prototype.forEach.call(cardsEl.querySelectorAll(".view-btn"), function(btn){
+    var policyItems = list.filter(function(p){ return p.doc_type !== "sop"; });
+    var sopItems = list.filter(function(p){ return p.doc_type === "sop"; });
+
+    if (policyItems.length){
+      policiesGroup.style.display = "block";
+      policiesCardsEl.innerHTML = policyItems.map(resultCardHtml).join("");
+    } else {
+      policiesGroup.style.display = "none";
+      policiesCardsEl.innerHTML = "";
+    }
+
+    if (sopItems.length){
+      sopsGroup.style.display = "block";
+      sopsCardsEl.innerHTML = sopItems.map(resultCardHtml).join("");
+    } else {
+      sopsGroup.style.display = "none";
+      sopsCardsEl.innerHTML = "";
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll("#policiesCards .view-btn, #sopsCards .view-btn"), function(btn){
       btn.addEventListener("click", function(){ openModal(btn.getAttribute("data-id")); });
     });
   }
@@ -1709,6 +1757,20 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
   function showUploadForm(){
     document.getElementById("addChoice").style.display = "none";
     document.getElementById("uploadForm").style.display = "block";
+    applyAddFormRoleLock();
+  }
+
+  function applyAddFormRoleLock(){
+    var docTypeSection = document.getElementById("docTypeSection");
+    if (isSopOnlyStaff() && !editingPolicyId){
+      selectedDocType = "sop";
+      if (docTypeSection) docTypeSection.style.display = "none";
+      document.getElementById("up-parent-wrap").style.display = "block";
+      populateParentPicker();
+    } else if (docTypeSection) {
+      docTypeSection.style.display = "";
+    }
+    renderDocTypeChips();
   }
 
   // ==================== GUIDED SOP BUILDER ====================
@@ -2571,18 +2633,23 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
 
     document.getElementById("whoLabel").textContent = currentProfile.name;
     var badge = document.getElementById("roleBadge");
-    badge.textContent = currentProfile.role === "admin" ? "Admin" : "Staff";
+    badge.textContent = roleLabel(currentProfile.role);
     badge.className = "role-badge" + (currentProfile.role === "admin" ? "" : " staff");
 
     Array.prototype.forEach.call(document.querySelectorAll(".admin-only"), function(el){
       el.style.display = isAdmin() ? "inline-block" : "none";
     });
-    // if a staff member happened to be on an admin-only view, bounce them to search
-    var uploadBtn = document.querySelector('[data-view="upload"]');
-    var activeAdminView = document.getElementById("view-upload").classList.contains("active") ||
-      document.getElementById("view-builder").classList.contains("active") ||
-      document.getElementById("view-people").classList.contains("active");
-    if (!isAdmin() && activeAdminView) switchView("search");
+    Array.prototype.forEach.call(document.querySelectorAll(".sop-creator-only"), function(el){
+      el.style.display = canManageSops() ? "inline-block" : "none";
+    });
+    // if someone happened to be on a view they no longer have access to, bounce them to search
+    var onPeopleView = document.getElementById("view-people").classList.contains("active");
+    var onAddView = document.getElementById("view-upload").classList.contains("active") ||
+      document.getElementById("view-builder").classList.contains("active");
+    if ((!isAdmin() && onPeopleView) || (!canManageSops() && onAddView)) switchView("search");
+
+    var chooseUploadTitle = document.querySelector("#chooseUploadBtn .add-choice-title");
+    if (chooseUploadTitle) chooseUploadTitle.textContent = isSopOnlyStaff() ? "Upload an SOP" : "Upload a Policy or SOP";
 
     await Promise.all([loadPolicies(), loadRequests(), loadAcknowledgments()]);
     if (isAdmin()) loadPeople();
@@ -2700,7 +2767,7 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
         '<button type="button" class="wah-button wah-button--secondary wah-button--small remove-person-btn" data-id="' + escapeHtml(p.id) + '" data-name="' + escapeHtml(p.name) + '" style="border-color:#c0392b;color:#8a2f22">Remove</button>';
       return '<div class="people-row">' +
         '<span class="name">' + escapeHtml(p.name) + (isSelf ? " (you)" : "") + '</span>' +
-        '<span class="role-badge' + (p.role === "admin" ? "" : " staff") + '">' + (p.role === "admin" ? "Admin" : "Staff") + '</span>' +
+        '<span class="role-badge' + (p.role === "admin" ? "" : " staff") + '">' + roleLabel(p.role) + '</span>' +
         '<span class="flags">' + (p.must_change_password ? "Hasn't set their own password yet" : "Active") + '</span>' +
         removeBtn +
         '</div>';
