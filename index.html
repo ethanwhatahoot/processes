@@ -227,6 +227,13 @@
   .related-sops ul{margin:0;padding-left:18px}
   .related-sops a{color:var(--ink);font-weight:700;text-decoration:none;cursor:pointer}
   .related-sops a:hover{text-decoration:underline}
+  .step-display{margin:0 0 18px}
+  .step-display h4{margin:0 0 10px;text-transform:uppercase;font-weight:800;font-size:.95rem;letter-spacing:.03em;color:var(--orange-dark);border-bottom:2px solid var(--warm-grey);padding-bottom:6px}
+  .step-display .step-card{border:1px solid rgba(var(--ink-rgb),.12);border-radius:var(--radius-card);background:var(--cream);padding:14px 16px;margin-bottom:12px}
+  .step-display .step-num{font-weight:800;color:var(--orange-dark);text-transform:uppercase;font-size:.72rem;margin-bottom:6px;letter-spacing:.04em}
+  .step-display img{max-width:100%;max-height:110mm;object-fit:contain;border-radius:8px;margin:8px 0;display:block;break-inside:avoid}
+  .step-display .step-warning{color:#8a2f22;font-weight:700;font-size:.85rem;margin-top:6px}
+  .step-display .step-outcome{color:var(--grey);font-size:.85rem;margin-top:4px;font-style:italic}
   .ack-box{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 16px;padding:14px 16px;background:var(--warm-grey);border-radius:var(--radius-card)}
   .ack-status{font-size:.82rem;font-weight:700;color:var(--ink)}
   .ack-status.done{color:#2f7a3d}
@@ -241,9 +248,41 @@
   .ack-row .ack-names .missing{color:#8a2f22}
   #passwordReveal .pw-close{margin-top:12px}
   .badge-updated{background:var(--orange-dark);color:var(--white)}
-  .ai-format-row{display:flex;align-items:center;gap:10px;margin:8px 0 2px;flex-wrap:wrap}
-  .ai-format-row .ai-status{font-size:.78rem;color:var(--grey)}
   .edit-banner{background:var(--warm-grey);border:1px solid var(--orange);border-radius:var(--radius-card);padding:10px 14px;margin-bottom:16px;font-size:.85rem;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+
+  .add-choice{display:flex;gap:16px;flex-wrap:wrap;margin-top:24px;max-width:820px}
+  .add-choice-btn{flex:1;min-width:230px;text-align:left;background:var(--white);border:1px solid rgba(var(--ink-rgb),.15);border-radius:var(--radius-card);padding:22px 20px;cursor:pointer;display:flex;flex-direction:column;gap:6px;box-shadow:0 4px 5px rgba(var(--ink-rgb),.05);font-family:var(--font)}
+  .add-choice-btn:hover{border-color:var(--orange)}
+  .add-choice-title{font-weight:800;font-size:1.05rem;text-transform:uppercase;letter-spacing:.02em;color:var(--ink)}
+  .add-choice-desc{font-size:.85rem;color:var(--grey);font-weight:400}
+
+  .builder-wrap{max-width:720px}
+  .builder-progress{display:flex;align-items:center;gap:10px;margin:6px 0 26px;font-size:.78rem;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:.04em}
+  .builder-progress-bar{flex:1;height:6px;background:var(--warm-grey);border-radius:6px;overflow:hidden}
+  .builder-progress-fill{height:100%;background:var(--orange);border-radius:6px;transition:width .2s ease}
+  .builder-screen h3{margin:0 0 4px;font-size:1.3rem;font-weight:800;text-transform:uppercase}
+  .builder-screen .builder-sub{color:var(--grey);font-size:.9rem;margin:0 0 22px}
+  .builder-q{margin-bottom:24px}
+  .builder-q label{display:block;font-weight:800;font-size:.92rem;margin-bottom:6px}
+  .builder-q .example{font-size:.8rem;color:var(--grey);font-style:italic;margin:4px 0 8px}
+  .builder-q input[type="text"], .builder-q textarea, .builder-q select{width:100%;padding:12px 13px;border-radius:6px;border:1px solid rgba(var(--ink-rgb),.3);font-size:.98rem;background:var(--white);color:var(--ink);font-family:var(--font)}
+  .builder-q textarea{min-height:90px;resize:vertical}
+  .builder-options{display:flex;flex-wrap:wrap;gap:8px}
+  .builder-opt{border-radius:var(--radius-pill);border:1px solid rgba(var(--ink-rgb),.3);background:var(--white);padding:8px 16px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:var(--font)}
+  .builder-opt.active{background:var(--ink);border-color:var(--ink);color:var(--header-cream)}
+  .builder-mic{border:none;background:var(--warm-grey);border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:1rem;vertical-align:middle;margin-left:8px}
+  .builder-mic.on{background:var(--orange);color:var(--white)}
+  .builder-card{border:1px solid rgba(var(--ink-rgb),.15);border-radius:var(--radius-card);background:var(--cream);padding:16px 18px;margin-bottom:14px;position:relative}
+  .builder-card .builder-card-num{font-weight:800;font-size:.75rem;text-transform:uppercase;color:var(--orange-dark);margin-bottom:8px}
+  .builder-card-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .builder-photo-preview{max-width:160px;max-height:160px;border-radius:8px;display:block;margin:8px 0}
+  .builder-nav{display:flex;justify-content:space-between;gap:10px;margin-top:30px;flex-wrap:wrap}
+  .builder-review dl{margin:0}
+  .builder-review dt{font-weight:800;font-size:.78rem;text-transform:uppercase;color:var(--orange-dark);margin-top:16px}
+  .builder-review dd{margin:4px 0 0;font-size:.92rem}
+  .builder-flags{background:var(--warm-grey);border:1px solid var(--orange);border-radius:var(--radius-card);padding:14px 16px;margin:18px 0}
+  .builder-flags h5{margin:0 0 8px;text-transform:uppercase;font-size:.8rem;color:var(--orange-dark)}
+  .builder-flags ul{margin:0;padding-left:20px}
 </style>
 </head>
 <body>
@@ -573,7 +612,7 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     </div>
     <nav class="tabs" id="mainTabs" style="display:none">
       <button data-view="search" class="active">Search</button>
-      <button data-view="upload" class="admin-only">Upload a policy</button>
+      <button data-view="upload" class="admin-only">Add a policy</button>
       <button data-view="request">Request a policy</button>
       <button data-view="people" class="admin-only">Team</button>
     </nav>
@@ -608,13 +647,25 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
       <div class="cards" id="resultsCards"></div>
     </section>
 
-    <!-- UPLOAD (admin only) -->
+    <!-- ADD (admin only) -->
     <section id="view-upload" class="view">
       <p class="eyebrow">Contribute</p>
-      <h2 class="section-title">Upload a policy or SOP</h2>
-      <p class="intro">Upload a PDF or Word (.docx) file and we'll pull the text out automatically, format it into a proper policy page, and make it fully searchable. No file to hand? Just paste or type the text directly instead.</p>
+      <h2 class="section-title">Add a policy</h2>
+      <p class="intro" id="addIntro">Choose how you'd like to add this.</p>
 
-      <form class="card-form" id="uploadForm">
+      <div class="add-choice" id="addChoice">
+        <button type="button" class="add-choice-btn" id="chooseUploadBtn">
+          <span class="add-choice-title">Upload a Policy or SOP</span>
+          <span class="add-choice-desc">Attach a PDF or Word file, or paste the text yourself.</span>
+        </button>
+        <button type="button" class="add-choice-btn" id="chooseBuilderBtn">
+          <span class="add-choice-title">Build an SOP</span>
+          <span class="add-choice-desc">Answer simple guided questions in your own words, add photos, and we'll turn it into a properly formatted WhataHoot SOP.</span>
+        </button>
+      </div>
+
+      <form class="card-form" id="uploadForm" style="display:none">
+        <button type="button" class="wah-button wah-button--secondary wah-button--small" id="backToChoiceBtn" style="margin-bottom:18px">← Back</button>
         <div class="edit-banner" id="editBanner" style="display:none">
           <span id="editBannerText">Editing an existing document.</span>
           <button type="button" class="wah-button wah-button--secondary wah-button--small" id="cancelEditBtn">Cancel edit</button>
@@ -653,11 +704,6 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
           <span class="hint">Auto-filled and formatted from the PDF above — check it looks right, or paste/type it here if you didn't upload a PDF</span>
           <textarea id="up-content" placeholder="Text will appear here automatically once you choose a PDF, or paste it yourself..."></textarea>
         </label>
-        <div class="ai-format-row">
-          <button type="button" class="wah-button wah-button--secondary wah-button--small" id="aiFormatBtn">✨ AI-format this text</button>
-          <span class="ai-status" id="aiFormatStatus"></span>
-        </div>
-        <p class="hint">Tidies rough notes into WhataHoot's policy/SOP structure — always check the result before saving, nothing is published automatically.</p>
 
         <div class="submit-row">
           <button type="submit" class="wah-button" id="uploadSubmitBtn">Upload policy</button>
@@ -665,6 +711,11 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
         </div>
         <div class="toast" id="uploadToast"></div>
       </form>
+    </section>
+
+    <!-- SOP BUILDER (admin only) -->
+    <section id="view-builder" class="view">
+      <div id="builderRoot"></div>
     </section>
 
     <!-- REQUEST -->
@@ -1169,6 +1220,21 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
       bodyEl.innerHTML = '<p style="color:var(--grey);font-style:italic">No text added for this policy yet.</p>';
     }
 
+    if (Array.isArray(p.builder_steps) && p.builder_steps.length){
+      var stepsHtml = '<div class="step-display"><h4>Step-by-step procedure</h4>' +
+        p.builder_steps.map(function(st, i){
+          return '<div class="step-card">' +
+            '<div class="step-num">Step ' + (i + 1) + '</div>' +
+            '<p>' + escapeHtml(st.instruction || "") + '</p>' +
+            (st.photo_url ? '<img src="' + escapeHtml(st.photo_url) + '" alt="Step ' + (i + 1) + ' photo">' : "") +
+            (st.warning ? '<p class="step-warning">⚠ ' + escapeHtml(st.warning) + '</p>' : "") +
+            (st.outcome ? '<p class="step-outcome">Should look like: ' + escapeHtml(st.outcome) + '</p>' : "") +
+          '</div>';
+        }).join("") +
+      '</div>';
+      bodyEl.innerHTML += stepsHtml;
+    }
+
     var relatedWrap = document.getElementById("modalRelatedSops");
     var relatedList = document.getElementById("modalRelatedSopsList");
     if (p.doc_type !== "sop"){
@@ -1615,13 +1681,13 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     document.getElementById("pdfStatus").textContent = p.file_name
       ? "Currently attached: " + p.file_name + " — choose a new file only if you want to replace it."
       : "";
-    document.getElementById("aiFormatStatus").textContent = "";
     document.getElementById("uploadSubmitBtn").textContent = "Save changes";
     var banner = document.getElementById("editBanner");
     banner.style.display = "flex";
     document.getElementById("editBannerText").textContent = 'Editing "' + p.title + '" — saving will flag it at the top of search until an admin approves the update.';
     closeModal();
     switchView("upload");
+    showUploadForm();
   }
 
   async function approveUpdate(id){
@@ -1635,15 +1701,480 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     }
   }
 
-  async function aiFormatContent(){
-    var btn = document.getElementById("aiFormatBtn");
-    var statusEl = document.getElementById("aiFormatStatus");
-    var contentEl = document.getElementById("up-content");
-    var text = contentEl.value.trim();
-    if (!text){ statusEl.textContent = "Add some text or notes first, then AI-format it."; return; }
-    var title = document.getElementById("up-title").value.trim();
-    btn.disabled = true;
-    statusEl.textContent = "Asking AI to tidy this up…";
+  function showAddChoice(){
+    document.getElementById("addChoice").style.display = "flex";
+    document.getElementById("uploadForm").style.display = "none";
+  }
+
+  function showUploadForm(){
+    document.getElementById("addChoice").style.display = "none";
+    document.getElementById("uploadForm").style.display = "block";
+  }
+
+  // ==================== GUIDED SOP BUILDER ====================
+  var builderState = null;
+  var builderScreen = 0; // 0=intro,1-7=sections,8=processing,9=ai review
+  var builderDraftId = null;
+  var builderAiResult = null;
+  var builderResumeCandidate = null;
+  var builderSaveTimer = null;
+  var builderSelectedTags = {};
+
+  function defaultBuilderState(){
+    return {
+      taskName: "", location: "", locationOther: "", frequency: "", frequencyOther: "",
+      who: "", whoOther: "",
+      why: "", risks: [], risksOther: "",
+      equipment: [], ppe: [], ppeOther: "", prepNeeded: "", prepDetails: "",
+      steps: [],
+      hasProblems: "", problems: [], stopWhen: "", whoToAsk: "", whoToAskOther: "",
+      completion: "", signoff: "", signoffOther: "", records: [], recordsOther: ""
+    };
+  }
+
+  async function openSopBuilder(){
+    builderScreen = 0;
+    builderAiResult = null;
+    builderResumeCandidate = null;
+    builderDraftId = null;
+    builderState = defaultBuilderState();
+    builderSelectedTags = {};
+    renderBuilderScreen();
+    try{
+      var userRes = await sb.auth.getUser();
+      var uid = userRes.data && userRes.data.user ? userRes.data.user.id : null;
+      if (!uid) return;
+      var res = await sb.from("policy_hub_sop_drafts").select("*").eq("created_by", uid).eq("status", "draft").order("updated_at", { ascending: false }).limit(1);
+      var draft = (res.data || [])[0];
+      if (draft){ builderResumeCandidate = draft; renderBuilderScreen(); }
+    }catch(e){ /* no drafts, fine */ }
+  }
+
+  function resumeDraft(){
+    if (!builderResumeCandidate) return;
+    builderDraftId = builderResumeCandidate.id;
+    builderState = Object.assign(defaultBuilderState(), builderResumeCandidate.answers || {});
+    builderResumeCandidate = null;
+    builderScreen = 1;
+    renderBuilderScreen();
+  }
+
+  function discardDraftAndStartNew(){
+    builderResumeCandidate = null;
+    renderBuilderScreen();
+  }
+
+  async function ensureBuilderDraft(){
+    if (builderDraftId) return builderDraftId;
+    try{
+      var userRes = await sb.auth.getUser();
+      var uid = userRes.data && userRes.data.user ? userRes.data.user.id : null;
+      var res = await sb.from("policy_hub_sop_drafts").insert({
+        created_by: uid,
+        created_by_name: currentProfile ? currentProfile.name : null,
+        status: "draft",
+        answers: builderState
+      }).select().single();
+      if (res.error){ return null; }
+      builderDraftId = res.data.id;
+      return builderDraftId;
+    }catch(e){ return null; }
+  }
+
+  function scheduleBuilderSave(){
+    clearTimeout(builderSaveTimer);
+    builderSaveTimer = setTimeout(saveBuilderDraftNow, 700);
+  }
+
+  async function saveBuilderDraftNow(){
+    if (!builderDraftId) await ensureBuilderDraft();
+    if (!builderDraftId) return;
+    try{
+      await sb.from("policy_hub_sop_drafts").update({ answers: builderState, updated_at: new Date().toISOString() }).eq("id", builderDraftId);
+    }catch(e){ /* best effort autosave */ }
+  }
+
+  async function uploadBuilderPhoto(file){
+    var safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    var path = "sop-builder/" + (builderDraftId || "temp") + "/" + Date.now() + "-" + safeName;
+    var up = await sb.storage.from("policy-files").upload(path, file);
+    if (up.error) throw up.error;
+    var urlRes = sb.storage.from("policy-files").getPublicUrl(path);
+    return urlRes.data.publicUrl;
+  }
+
+  function attachMic(btn, textarea){
+    if (!textarea || !btn) return;
+    var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRec){ btn.style.display = "none"; return; }
+    var recognizing = false;
+    var rec = new SpeechRec();
+    rec.continuous = true;
+    rec.interimResults = false;
+    rec.lang = "en-GB";
+    rec.onresult = function(e){
+      var text = "";
+      for (var i = e.resultIndex; i < e.results.length; i++){ text += e.results[i][0].transcript; }
+      textarea.value = (textarea.value ? textarea.value + " " : "") + text.trim();
+      var field = textarea.getAttribute("data-field");
+      if (field){ builderState[field] = textarea.value; scheduleBuilderSave(); }
+      var stepField = textarea.getAttribute("data-step-field");
+      if (stepField){
+        var idx = parseInt(textarea.getAttribute("data-step-index"), 10);
+        builderState.steps[idx][stepField] = textarea.value;
+        scheduleBuilderSave();
+      }
+    };
+    rec.onerror = function(){ recognizing = false; btn.classList.remove("on"); };
+    rec.onend = function(){ recognizing = false; btn.classList.remove("on"); };
+    btn.addEventListener("click", function(){
+      if (recognizing){ rec.stop(); recognizing = false; btn.classList.remove("on"); }
+      else { rec.start(); recognizing = true; btn.classList.add("on"); }
+    });
+  }
+
+  function chipGroupHtml(fieldKey, options, multi, otherFieldKey){
+    var current = builderState[fieldKey];
+    var isSelected = function(opt){
+      return multi ? (Array.isArray(current) && current.indexOf(opt) > -1) : (current === opt);
+    };
+    var chips = options.map(function(opt){
+      return '<button type="button" class="builder-opt' + (isSelected(opt) ? " active" : "") + '" data-chip-field="' + fieldKey + '" data-chip-value="' + escapeHtml(opt) + '" data-chip-multi="' + (multi ? "1" : "0") + '">' + escapeHtml(opt) + '</button>';
+    }).join("");
+    var otherVisible = multi ? (Array.isArray(current) && current.indexOf("Other") > -1) : (current === "Other");
+    var otherHtml = "";
+    if (otherFieldKey){
+      otherHtml = '<input type="text" class="builder-other-input" data-other-field="' + otherFieldKey + '" style="margin-top:8px;padding:10px 12px;border-radius:6px;border:1px solid rgba(var(--ink-rgb),.3);width:100%;' + (otherVisible ? "" : "display:none;") + '" placeholder="Please specify…" value="' + escapeHtml(builderState[otherFieldKey] || "") + '">';
+    }
+    return '<div class="builder-options" data-chip-group="' + fieldKey + '">' + chips + '</div>' + otherHtml;
+  }
+
+  function wireChipGroups(root){
+    Array.prototype.forEach.call(root.querySelectorAll("[data-chip-field]"), function(btn){
+      btn.addEventListener("click", function(){
+        var field = btn.getAttribute("data-chip-field");
+        var val = btn.getAttribute("data-chip-value");
+        var multi = btn.getAttribute("data-chip-multi") === "1";
+        if (multi){
+          if (!Array.isArray(builderState[field])) builderState[field] = [];
+          if (val === "No" || val === "Nothing serious"){
+            builderState[field] = (builderState[field].indexOf(val) > -1) ? [] : [val];
+          } else {
+            builderState[field] = builderState[field].filter(function(v){ return v !== "No" && v !== "Nothing serious"; });
+            var idx = builderState[field].indexOf(val);
+            if (idx > -1) builderState[field].splice(idx, 1); else builderState[field].push(val);
+          }
+        } else {
+          builderState[field] = (builderState[field] === val) ? "" : val;
+        }
+        scheduleBuilderSave();
+        renderBuilderScreen();
+      });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-other-field]"), function(inp){
+      inp.addEventListener("input", function(){
+        builderState[inp.getAttribute("data-other-field")] = inp.value;
+        scheduleBuilderSave();
+      });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-field]"), function(el){
+      el.addEventListener("input", function(){
+        builderState[el.getAttribute("data-field")] = el.value;
+        scheduleBuilderSave();
+      });
+    });
+  }
+
+  function builderProgressHtml(n){
+    var pct = Math.round((n / 7) * 100);
+    return '<div class="builder-progress"><span>Step ' + n + ' of 7</span><div class="builder-progress-bar"><div class="builder-progress-fill" style="width:' + pct + '%"></div></div></div>';
+  }
+
+  function builderIntroHtml(){
+    var resumeBlock = "";
+    if (builderResumeCandidate){
+      var name = (builderResumeCandidate.answers && builderResumeCandidate.answers.taskName) || "an unfinished SOP";
+      resumeBlock = '<div class="edit-banner" style="display:flex">' +
+        '<span>You have an unfinished draft: "' + escapeHtml(name) + '"</span>' +
+        '<span style="display:flex;gap:8px">' +
+          '<button type="button" class="wah-button wah-button--small" id="resumeDraftBtn">Resume</button>' +
+          '<button type="button" class="wah-button wah-button--secondary wah-button--small" id="discardDraftBtn">Start new</button>' +
+        '</span></div>';
+    }
+    return '<p class="eyebrow">Build an SOP</p>' +
+      '<h2 class="section-title">Help us document how this task is done</h2>' +
+      resumeBlock +
+      '<p class="intro">You do not need to write formally. Just answer the questions in your own words, add photos where helpful, and the system will turn your answers into a properly formatted WhataHoot SOP.</p>' +
+      '<p class="intro" style="color:var(--grey);font-size:.85rem">Estimated time: 10–15 minutes.</p>' +
+      '<div class="builder-nav">' +
+        '<button type="button" class="wah-button" id="builderStartBtn">Start</button>' +
+        '<button type="button" class="wah-button wah-button--secondary" id="builderExitBtn">Save and finish later</button>' +
+      '</div>';
+  }
+
+  function builderSection1Html(){
+    return '<div class="builder-screen">' +
+      '<h3>What task are you showing us?</h3>' +
+      '<div class="builder-q">' +
+        '<label for="b-taskName">What is the task called?</label>' +
+        '<p class="example">Example: Opening the bar</p>' +
+        '<input type="text" id="b-taskName" data-field="taskName" value="' + escapeHtml(builderState.taskName) + '">' +
+      '</div>' +
+      '<div class="builder-q">' +
+        '<label>Where is this task carried out?</label>' +
+        chipGroupHtml("location", ["Bar","Shop","Cellar","Distillery","Production area","Office","Events","Experiences","Other"], false, "locationOther") +
+      '</div>' +
+      '<div class="builder-q">' +
+        '<label>When is this task usually done?</label>' +
+        chipGroupHtml("frequency", ["Every day","Before opening","During service","After closing","Weekly","Monthly","When something goes wrong","Only when needed","Other"], false, "frequencyOther") +
+      '</div>' +
+      '<div class="builder-q">' +
+        '<label>Who normally does this task?</label>' +
+        chipGroupHtml("who", ["Bar staff","Shop staff","Production staff","Experience host","Manager","Office staff","Any trained member of staff","Other"], false, "whoOther") +
+      '</div>' +
+    '</div>';
+  }
+
+  function builderSection2Html(){
+    return '<div class="builder-screen">' +
+      '<h3>Why do we do it?</h3>' +
+      '<div class="builder-q">' +
+        '<label for="b-why">Why is this task important? <button type="button" class="builder-mic" data-mic-target="b-why">🎤</button></label>' +
+        '<p class="example">Tell us what this task helps us achieve or what problem it prevents. Example: It makes sure the bar is clean, stocked and ready for customers.</p>' +
+        '<textarea id="b-why" data-field="why">' + escapeHtml(builderState.why) + '</textarea>' +
+      '</div>' +
+      '<div class="builder-q">' +
+        '<label>What could go wrong if this task is not done properly?</label>' +
+        '<p class="example">Select all that apply.</p>' +
+        chipGroupHtml("risks", ["Someone could get hurt","Food or drink could be contaminated","Stock could be damaged or wasted","Customers could receive poor service","Equipment could be damaged","Money could be lost","Licensing rules could be broken","The area may not be clean","Nothing serious","Other"], true, "risksOther") +
+      '</div>' +
+    '</div>';
+  }
+
+  function builderSection3Html(){
+    var equipHtml = builderState.equipment.map(function(item, i){
+      return '<div class="builder-card"><span class="builder-card-num">Item ' + (i + 1) + '</span> ' + escapeHtml(item) +
+        ' <button type="button" class="wah-button wah-button--secondary wah-button--small" data-remove-equipment="' + i + '" style="margin-left:10px">Remove</button></div>';
+    }).join("");
+    return '<div class="builder-screen">' +
+      '<h3>What do you need?</h3>' +
+      '<div class="builder-q">' +
+        '<label>What equipment or items do you need?</label>' +
+        '<p class="example">Add anything you need before starting. Examples: Cleaning spray, cloths, till key, ice scoop, stock sheet, protective gloves.</p>' +
+        equipHtml +
+        '<div style="display:flex;gap:8px;margin-top:6px">' +
+          '<input type="text" id="b-equip-new" placeholder="e.g. Ice scoop" style="flex:1;padding:12px 13px;border-radius:6px;border:1px solid rgba(var(--ink-rgb),.3)">' +
+          '<button type="button" class="wah-button wah-button--secondary wah-button--small" id="b-equip-add">Add another</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="builder-q">' +
+        '<label>Do you need any protective equipment?</label>' +
+        chipGroupHtml("ppe", ["No","Gloves","Apron","Safety glasses","Safety footwear","Other"], true, "ppeOther") +
+      '</div>' +
+      '<div class="builder-q">' +
+        '<label>Do you need to check or prepare anything before starting?</label>' +
+        chipGroupHtml("prepNeeded", ["No","Yes"], false) +
+        (builderState.prepNeeded === "Yes" ? '<textarea data-field="prepDetails" placeholder="What needs to be checked or prepared? Example: Check the glass washer is switched on and has reached temperature." style="margin-top:8px">' + escapeHtml(builderState.prepDetails) + '</textarea>' : "") +
+      '</div>' +
+    '</div>';
+  }
+
+  function builderStepCardHtml(step, i, total){
+    return '<div class="builder-card">' +
+      '<span class="builder-card-num">Step ' + (i + 1) + '</span>' +
+      '<div class="builder-q" style="margin-bottom:10px">' +
+        '<label>' + (i === 0 ? "What do you do first?" : "What do you do next?") + ' <button type="button" class="builder-mic" data-mic-target="b-step-' + i + '">🎤</button></label>' +
+        '<textarea id="b-step-' + i + '" data-step-field="instruction" data-step-index="' + i + '">' + escapeHtml(step.instruction || "") + '</textarea>' +
+      '</div>' +
+      (step.photoUrl ? '<img class="builder-photo-preview" src="' + escapeHtml(step.photoUrl) + '">' : "") +
+      '<div class="builder-q" style="margin-bottom:10px">' +
+        '<label style="font-weight:600;font-size:.82rem">Would a photo make this clearer?</label>' +
+        '<input type="file" accept="image/*" capture="environment" data-step-photo="' + i + '">' +
+      '</div>' +
+      '<div class="builder-q" style="margin-bottom:10px">' +
+        '<label style="font-weight:600;font-size:.82rem">Anything important to remember? (optional)</label>' +
+        '<input type="text" data-step-field="warning" data-step-index="' + i + '" value="' + escapeHtml(step.warning || "") + '" placeholder="Example: Make sure the alarm has been turned off before opening the back door.">' +
+      '</div>' +
+      '<div class="builder-q" style="margin-bottom:6px">' +
+        '<label style="font-weight:600;font-size:.82rem">What should this look like when done correctly? (optional)</label>' +
+        '<input type="text" data-step-field="outcome" data-step-index="' + i + '" value="' + escapeHtml(step.outcome || "") + '" placeholder="Example: All lights should be on and the customer area should look clean and tidy.">' +
+      '</div>' +
+      '<div class="builder-card-actions">' +
+        (i > 0 ? '<button type="button" class="wah-button wah-button--secondary wah-button--small" data-step-move="up:' + i + '">Move up</button>' : "") +
+        (i < total - 1 ? '<button type="button" class="wah-button wah-button--secondary wah-button--small" data-step-move="down:' + i + '">Move down</button>' : "") +
+        '<button type="button" class="wah-button wah-button--secondary wah-button--small" data-step-remove="' + i + '" style="border-color:#c0392b;color:#8a2f22">Delete step</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function builderSection4Html(){
+    if (!builderState.steps.length) builderState.steps = [{ instruction: "", photoUrl: "", warning: "", outcome: "" }];
+    var cards = builderState.steps.map(function(s, i){ return builderStepCardHtml(s, i, builderState.steps.length); }).join("");
+    return '<div class="builder-screen">' +
+      '<h3>Show us the steps</h3>' +
+      '<p class="builder-sub">Add one step at a time, in the order they happen.</p>' +
+      cards +
+      '<div class="builder-nav" style="justify-content:flex-start">' +
+        '<button type="button" class="wah-button wah-button--secondary" id="b-add-step">Add next step</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function builderProblemCardHtml(p, i){
+    return '<div class="builder-card">' +
+      '<span class="builder-card-num">Problem ' + (i + 1) + '</span>' +
+      '<div class="builder-q" style="margin-bottom:8px"><label>What might go wrong?</label>' +
+        '<input type="text" data-problem-field="what" data-problem-index="' + i + '" value="' + escapeHtml(p.what || "") + '" placeholder="Example: The glass washer does not heat up."></div>' +
+      '<div class="builder-q" style="margin-bottom:6px"><label>What should the person do?</label>' +
+        '<input type="text" data-problem-field="action" data-problem-index="' + i + '" value="' + escapeHtml(p.action || "") + '" placeholder="Example: Stop using it and tell the duty manager."></div>' +
+      '<button type="button" class="wah-button wah-button--secondary wah-button--small" data-problem-remove="' + i + '" style="border-color:#c0392b;color:#8a2f22">Remove</button>' +
+    '</div>';
+  }
+
+  function builderSection5Html(){
+    var problemsBlock = "";
+    if (builderState.hasProblems === "Yes"){
+      var cards = builderState.problems.map(builderProblemCardHtml).join("");
+      problemsBlock = cards + '<button type="button" class="wah-button wah-button--secondary wah-button--small" id="b-add-problem">Add another problem</button>';
+    }
+    return '<div class="builder-screen">' +
+      '<h3>What if something goes wrong?</h3>' +
+      '<div class="builder-q">' +
+        '<label>Are there any common problems with this task?</label>' +
+        chipGroupHtml("hasProblems", ["No","Yes"], false) +
+        problemsBlock +
+      '</div>' +
+      '<div class="builder-q">' +
+        '<label for="b-stopWhen">When should someone stop and ask a manager for help? <button type="button" class="builder-mic" data-mic-target="b-stopWhen">🎤</button></label>' +
+        '<p class="example">Think about anything unsafe, damaged, missing or unusual. Example: Stop if broken glass may have fallen into the ice well.</p>' +
+        '<textarea id="b-stopWhen" data-field="stopWhen">' + escapeHtml(builderState.stopWhen) + '</textarea>' +
+      '</div>' +
+      '<div class="builder-q">' +
+        '<label>Who should they speak to?</label>' +
+        chipGroupHtml("whoToAsk", ["Duty manager","Bar manager","Production manager","Operations manager","Policy owner","Any manager","Other"], false, "whoToAskOther") +
+      '</div>' +
+    '</div>';
+  }
+
+  function builderSection6Html(){
+    return '<div class="builder-screen">' +
+      '<h3>How do we know it is finished?</h3>' +
+      '<div class="builder-q">' +
+        '<label>How do you know the task has been completed properly?</label>' +
+        '<p class="example">Example: The bar is clean, fully stocked, the tills are ready and the opening checklist is complete.</p>' +
+        '<textarea data-field="completion">' + escapeHtml(builderState.completion) + '</textarea>' +
+      '</div>' +
+      '<div class="builder-q">' +
+        '<label>Does anyone need to check or sign it off?</label>' +
+        chipGroupHtml("signoff", ["No","Duty manager","Department manager","Another trained member of staff","Other"], false, "signoffOther") +
+      '</div>' +
+      '<div class="builder-q">' +
+        '<label>Does anything need to be recorded?</label>' +
+        chipGroupHtml("records", ["No","Checklist","Cleaning record","Temperature log","Stock record","Near-miss report","Accident report","Manager sign-off","Other"], true, "recordsOther") +
+      '</div>' +
+    '</div>';
+  }
+
+  function builderSection7Html(){
+    var s = builderState;
+    function line(label, val){ return val ? ('<dt>' + escapeHtml(label) + '</dt><dd>' + escapeHtml(val) + '</dd>') : ""; }
+    function listLine(label, arr){ return (arr && arr.length) ? ('<dt>' + escapeHtml(label) + '</dt><dd>' + escapeHtml(arr.join(", ")) + '</dd>') : ""; }
+    var stepsHtml = s.steps.map(function(st){
+      return '<li>' + escapeHtml(st.instruction || "(no instruction added)") + (st.photoUrl ? ' <img class="builder-photo-preview" style="max-width:90px;max-height:90px;display:inline-block;vertical-align:middle;margin-left:8px" src="' + escapeHtml(st.photoUrl) + '">' : "") + '</li>';
+    }).join("");
+    var problemsHtml = (s.problems || []).map(function(p){ return '<li>' + escapeHtml(p.what) + ' → ' + escapeHtml(p.action) + '</li>'; }).join("");
+
+    return '<div class="builder-screen builder-review">' +
+      '<h3>Please check your answers</h3>' +
+      '<p class="builder-sub">Does this explain the task well enough for a new member of staff to follow?</p>' +
+      '<dl>' +
+        line("Task name", s.taskName) +
+        line("Where it happens", s.location === "Other" ? s.locationOther : s.location) +
+        line("Who does it", s.who === "Other" ? s.whoOther : s.who) +
+        listLine("Equipment needed", s.equipment) +
+        listLine("Protective equipment", s.ppe) +
+        (stepsHtml ? '<dt>Steps</dt><dd><ol>' + stepsHtml + '</ol></dd>' : "") +
+        (problemsHtml ? '<dt>Common problems</dt><dd><ul>' + problemsHtml + '</ul></dd>' : "") +
+        line("When to ask for help", s.stopWhen) +
+        line("Completion check", s.completion) +
+      '</dl>' +
+      '<div class="builder-nav">' +
+        '<button type="button" class="wah-button" id="b-submit">Yes, submit it</button>' +
+        '<button type="button" class="wah-button wah-button--secondary" id="b-back-to-edit">No, make changes</button>' +
+      '</div>' +
+      '<div style="margin-top:10px"><button type="button" class="link-btn" id="b-save-later">Save and finish later</button></div>' +
+    '</div>';
+  }
+
+  function builderSectionHtml(n){
+    var fns = [null, builderSection1Html, builderSection2Html, builderSection3Html, builderSection4Html, builderSection5Html, builderSection6Html, builderSection7Html];
+    var body = fns[n]();
+    if (n === 7) return body;
+    return body +
+      '<div class="builder-nav">' +
+        (n > 1 ? '<button type="button" class="wah-button wah-button--secondary" id="b-back">Back</button>' : '<span></span>') +
+        '<button type="button" class="wah-button" id="b-next">Next</button>' +
+      '</div>' +
+      '<div style="margin-top:10px"><button type="button" class="link-btn" id="b-save-later">Save and finish later</button></div>';
+  }
+
+  function builderProcessingHtml(){
+    return '<div class="builder-screen" style="text-align:center;padding:40px 0">' +
+      '<h3>Formatting your SOP…</h3>' +
+      '<p class="builder-sub">Tidying this into WhataHoot’s SOP structure. This takes a few seconds.</p>' +
+    '</div>';
+  }
+
+  function builderAiReviewHtml(){
+    var r = builderAiResult || { formatted: "", flags: [] };
+    var flagsHtml = (r.flags && r.flags.length)
+      ? '<div class="builder-flags"><h5>Worth checking before you publish</h5><ul>' + r.flags.map(function(f){ return '<li>' + escapeHtml(f) + '</li>'; }).join("") + '</ul></div>'
+      : "";
+    return '<div class="builder-screen">' +
+      '<h3>Draft ready</h3>' +
+      '<p class="builder-sub">Review the AI-formatted SOP below. Nothing is published until you approve it.</p>' +
+      flagsHtml +
+      '<div class="builder-q">' +
+        '<label for="b-ai-content">SOP text</label>' +
+        '<textarea id="b-ai-content" style="min-height:280px">' + escapeHtml(r.formatted) + '</textarea>' +
+      '</div>' +
+      '<div class="builder-q">' +
+        '<label>Which policy does this belong to? (optional)</label>' +
+        '<select id="b-ai-parent"><option value="">No parent policy</option></select>' +
+      '</div>' +
+      '<div class="builder-q">' +
+        '<label>Category</label>' +
+        '<div class="chips" id="b-ai-tags"></div>' +
+      '</div>' +
+      '<div class="builder-nav">' +
+        '<button type="button" class="wah-button" id="b-publish">Publish SOP</button>' +
+        '<button type="button" class="wah-button wah-button--secondary" id="b-back-to-review">Back to my answers</button>' +
+      '</div>' +
+      '<div style="margin-top:10px"><button type="button" class="link-btn" id="b-save-later-2">Save as draft, don’t publish yet</button></div>' +
+    '</div>';
+  }
+
+  function renderBuilderScreen(){
+    var root = document.getElementById("builderRoot");
+    if (!root) return;
+    var html = "";
+    if (builderScreen === 0){
+      html = builderIntroHtml();
+    } else if (builderScreen >= 1 && builderScreen <= 7){
+      html = builderProgressHtml(builderScreen) + builderSectionHtml(builderScreen);
+    } else if (builderScreen === 8){
+      html = builderProcessingHtml();
+    } else if (builderScreen === 9){
+      html = builderAiReviewHtml();
+    }
+    root.innerHTML = '<div class="builder-wrap">' + html + '</div>';
+    wireBuilderScreen();
+  }
+
+  async function submitBuilderToAi(){
+    builderScreen = 8;
+    renderBuilderScreen();
+    await saveBuilderDraftNow();
     try{
       var sessionRes = await sb.auth.getSession();
       var token = sessionRes.data.session ? sessionRes.data.session.access_token : null;
@@ -1651,18 +2182,220 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
       var resp = await fetch(SUPABASE_URL + "/functions/v1/ai-format-policy", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "apikey": SUPABASE_KEY },
-        body: JSON.stringify({ title: title, docType: selectedDocType, rawText: text })
+        body: JSON.stringify({ title: builderState.taskName, docType: "sop", builderAnswers: builderState })
       });
       var out = await resp.json();
       if (!resp.ok){ throw new Error(out.error || "AI formatting failed."); }
-      contentEl.value = out.formatted;
-      uploadContentIsExtracted = false;
-      statusEl.textContent = "Done — check it over before saving.";
+      builderAiResult = { formatted: out.formatted, flags: out.flags || [] };
+      if (builderDraftId){
+        await sb.from("policy_hub_sop_drafts").update({ status: "submitted", updated_at: new Date().toISOString() }).eq("id", builderDraftId);
+      }
+      builderScreen = 9;
+      renderBuilderScreen();
     }catch(err){
-      statusEl.textContent = err.message || "Something went wrong.";
+      alert("Something went wrong formatting this SOP: " + (err && err.message ? err.message : err) + "\n\nYou can try again from the review screen.");
+      builderScreen = 7;
+      renderBuilderScreen();
+    }
+  }
+
+  async function publishBuilderSop(){
+    var btn = document.getElementById("b-publish");
+    var content = document.getElementById("b-ai-content").value.trim();
+    var parentId = document.getElementById("b-ai-parent").value || null;
+    var chosenTags = Object.keys(builderSelectedTags).filter(function(t){ return builderSelectedTags[t]; });
+    if (!content){ alert("Add some SOP text before publishing."); return; }
+    btn.disabled = true;
+    btn.textContent = "Publishing…";
+    try{
+      var stepsPayload = builderState.steps
+        .filter(function(s){ return s.instruction && s.instruction.trim(); })
+        .map(function(s, i){ return { order: i, instruction: s.instruction, photo_url: s.photoUrl || null, warning: s.warning || null, outcome: s.outcome || null }; });
+
+      var payload = {
+        title: builderState.taskName,
+        tags: chosenTags,
+        keywords: "",
+        content: content,
+        uploaded_by: currentProfile ? currentProfile.name : null,
+        doc_type: "sop",
+        parent_policy_id: parentId,
+        content_source: "extracted",
+        builder_steps: stepsPayload,
+        file_name: null, file_path: null, file_url: null
+      };
+      var res = await sb.from("policies").insert(payload).select().single();
+      if (res.error) throw res.error;
+
+      if (builderDraftId){
+        await sb.from("policy_hub_sop_drafts").update({ status: "published", published_policy_id: res.data.id, updated_at: new Date().toISOString() }).eq("id", builderDraftId);
+      }
+
+      showToast("uploadToast", "SOP published.", true);
+      builderDraftId = null;
+      builderState = defaultBuilderState();
+      builderSelectedTags = {};
+      builderAiResult = null;
+      builderScreen = 0;
+      switchView("search");
+      await loadPolicies();
+      var publishedId = res.data.id;
+      setTimeout(function(){ openModal(publishedId); }, 300);
+    }catch(err){
+      alert("Couldn't publish: " + (err && err.message ? err.message : err));
     }finally{
       btn.disabled = false;
+      btn.textContent = "Publish SOP";
     }
+  }
+
+  function wireBuilderScreen(){
+    var root = document.getElementById("builderRoot");
+    if (!root) return;
+    wireChipGroups(root);
+
+    var startBtn = document.getElementById("builderStartBtn");
+    if (startBtn) startBtn.addEventListener("click", async function(){ await ensureBuilderDraft(); builderScreen = 1; renderBuilderScreen(); });
+
+    var exitBtn = document.getElementById("builderExitBtn");
+    if (exitBtn) exitBtn.addEventListener("click", function(){ switchView("upload"); showAddChoice(); });
+
+    var resumeBtn = document.getElementById("resumeDraftBtn");
+    if (resumeBtn) resumeBtn.addEventListener("click", resumeDraft);
+    var discardBtn = document.getElementById("discardDraftBtn");
+    if (discardBtn) discardBtn.addEventListener("click", discardDraftAndStartNew);
+
+    var backBtn = document.getElementById("b-back");
+    if (backBtn) backBtn.addEventListener("click", function(){ builderScreen--; renderBuilderScreen(); });
+    var nextBtn = document.getElementById("b-next");
+    if (nextBtn) nextBtn.addEventListener("click", function(){
+      if (builderScreen === 1 && !builderState.taskName.trim()){ alert("Add a task name before continuing."); return; }
+      scheduleBuilderSave();
+      builderScreen++;
+      renderBuilderScreen();
+    });
+    var saveLaterBtn = document.getElementById("b-save-later");
+    if (saveLaterBtn) saveLaterBtn.addEventListener("click", function(){ saveBuilderDraftNow(); switchView("upload"); showAddChoice(); });
+    var saveLaterBtn2 = document.getElementById("b-save-later-2");
+    if (saveLaterBtn2) saveLaterBtn2.addEventListener("click", function(){ switchView("upload"); showAddChoice(); });
+
+    var equipAdd = document.getElementById("b-equip-add");
+    if (equipAdd) equipAdd.addEventListener("click", function(){
+      var inp = document.getElementById("b-equip-new");
+      var v = inp.value.trim();
+      if (!v) return;
+      builderState.equipment.push(v);
+      scheduleBuilderSave();
+      renderBuilderScreen();
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-remove-equipment]"), function(btn){
+      btn.addEventListener("click", function(){
+        builderState.equipment.splice(parseInt(btn.getAttribute("data-remove-equipment"), 10), 1);
+        scheduleBuilderSave();
+        renderBuilderScreen();
+      });
+    });
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-step-field]"), function(el){
+      el.addEventListener("input", function(){
+        var idx = parseInt(el.getAttribute("data-step-index"), 10);
+        builderState.steps[idx][el.getAttribute("data-step-field")] = el.value;
+        scheduleBuilderSave();
+      });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-step-photo]"), function(el){
+      el.addEventListener("change", async function(){
+        var idx = parseInt(el.getAttribute("data-step-photo"), 10);
+        var file = el.files && el.files[0];
+        if (!file) return;
+        try{
+          await ensureBuilderDraft();
+          var url = await uploadBuilderPhoto(file);
+          builderState.steps[idx].photoUrl = url;
+          scheduleBuilderSave();
+          renderBuilderScreen();
+        }catch(err){ alert("Couldn't upload that photo: " + (err && err.message ? err.message : err)); }
+      });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-step-remove]"), function(btn){
+      btn.addEventListener("click", function(){
+        builderState.steps.splice(parseInt(btn.getAttribute("data-step-remove"), 10), 1);
+        scheduleBuilderSave();
+        renderBuilderScreen();
+      });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-step-move]"), function(btn){
+      btn.addEventListener("click", function(){
+        var parts = btn.getAttribute("data-step-move").split(":");
+        var dir = parts[0], idx = parseInt(parts[1], 10);
+        var swapWith = dir === "up" ? idx - 1 : idx + 1;
+        var arr = builderState.steps;
+        if (swapWith < 0 || swapWith >= arr.length) return;
+        var tmp = arr[idx]; arr[idx] = arr[swapWith]; arr[swapWith] = tmp;
+        scheduleBuilderSave();
+        renderBuilderScreen();
+      });
+    });
+    var addStepBtn = document.getElementById("b-add-step");
+    if (addStepBtn) addStepBtn.addEventListener("click", function(){
+      builderState.steps.push({ instruction: "", photoUrl: "", warning: "", outcome: "" });
+      scheduleBuilderSave();
+      renderBuilderScreen();
+    });
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-problem-field]"), function(el){
+      el.addEventListener("input", function(){
+        var idx = parseInt(el.getAttribute("data-problem-index"), 10);
+        builderState.problems[idx][el.getAttribute("data-problem-field")] = el.value;
+        scheduleBuilderSave();
+      });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-problem-remove]"), function(btn){
+      btn.addEventListener("click", function(){
+        builderState.problems.splice(parseInt(btn.getAttribute("data-problem-remove"), 10), 1);
+        scheduleBuilderSave();
+        renderBuilderScreen();
+      });
+    });
+    var addProblemBtn = document.getElementById("b-add-problem");
+    if (addProblemBtn) addProblemBtn.addEventListener("click", function(){
+      builderState.problems.push({ what: "", action: "" });
+      scheduleBuilderSave();
+      renderBuilderScreen();
+    });
+
+    var submitBtn = document.getElementById("b-submit");
+    if (submitBtn) submitBtn.addEventListener("click", submitBuilderToAi);
+    var backToEditBtn = document.getElementById("b-back-to-edit");
+    if (backToEditBtn) backToEditBtn.addEventListener("click", function(){ builderScreen = 1; renderBuilderScreen(); });
+
+    var publishBtn = document.getElementById("b-publish");
+    if (publishBtn) publishBtn.addEventListener("click", publishBuilderSop);
+    var backToReviewBtn = document.getElementById("b-back-to-review");
+    if (backToReviewBtn) backToReviewBtn.addEventListener("click", function(){ builderScreen = 7; renderBuilderScreen(); });
+
+    var aiParentSel = document.getElementById("b-ai-parent");
+    if (aiParentSel){
+      var parents = policies.filter(function(p){ return p.doc_type !== "sop"; }).slice().sort(function(a, b){ return a.title.localeCompare(b.title); });
+      aiParentSel.innerHTML = '<option value="">No parent policy</option>' + parents.map(function(p){ return '<option value="' + escapeHtml(p.id) + '">' + escapeHtml(p.title) + '</option>'; }).join("");
+    }
+    var aiTagsEl = document.getElementById("b-ai-tags");
+    if (aiTagsEl){
+      aiTagsEl.innerHTML = CATEGORIES.map(function(t){
+        return '<button type="button" class="chip-filter' + (builderSelectedTags[t] ? " active" : "") + '" data-ai-tag="' + escapeHtml(t) + '">' + escapeHtml(t) + '</button>';
+      }).join("");
+      Array.prototype.forEach.call(aiTagsEl.querySelectorAll(".chip-filter"), function(btn){
+        btn.addEventListener("click", function(){
+          var t = btn.getAttribute("data-ai-tag");
+          builderSelectedTags[t] = !builderSelectedTags[t];
+          btn.classList.toggle("active");
+        });
+      });
+    }
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-mic-target]"), function(btn){
+      attachMic(btn, document.getElementById(btn.getAttribute("data-mic-target")));
+    });
   }
 
   function initForms(){
@@ -1715,7 +2448,6 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
 
         document.getElementById("uploadForm").reset();
         document.getElementById("pdfStatus").textContent = "";
-        document.getElementById("aiFormatStatus").textContent = "";
         selectedUploadTags = {};
         renderTagPicker();
         selectedDocType = "policy";
@@ -1723,6 +2455,7 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
         document.getElementById("up-parent-wrap").style.display = "none";
         uploadContentIsExtracted = false;
         exitEditMode();
+        showAddChoice();
         await loadPolicies();
         setTimeout(function(){ switchView("search"); }, 700);
       }catch(err){
@@ -1758,7 +2491,6 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     document.getElementById("cancelEditBtn").addEventListener("click", function(){
       document.getElementById("uploadForm").reset();
       document.getElementById("pdfStatus").textContent = "";
-      document.getElementById("aiFormatStatus").textContent = "";
       selectedUploadTags = {};
       renderTagPicker();
       selectedDocType = "policy";
@@ -1766,10 +2498,27 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
       document.getElementById("up-parent-wrap").style.display = "none";
       uploadContentIsExtracted = false;
       exitEditMode();
+      showAddChoice();
       switchView("search");
     });
 
-    document.getElementById("aiFormatBtn").addEventListener("click", aiFormatContent);
+    document.getElementById("chooseUploadBtn").addEventListener("click", function(){ showUploadForm(); });
+    document.getElementById("backToChoiceBtn").addEventListener("click", function(){
+      document.getElementById("uploadForm").reset();
+      document.getElementById("pdfStatus").textContent = "";
+      selectedUploadTags = {};
+      renderTagPicker();
+      selectedDocType = "policy";
+      renderDocTypeChips();
+      document.getElementById("up-parent-wrap").style.display = "none";
+      uploadContentIsExtracted = false;
+      exitEditMode();
+      showAddChoice();
+    });
+    document.getElementById("chooseBuilderBtn").addEventListener("click", function(){
+      switchView("builder");
+      openSopBuilder();
+    });
   }
 
   // ==================== AUTH ====================
@@ -1831,6 +2580,7 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     // if a staff member happened to be on an admin-only view, bounce them to search
     var uploadBtn = document.querySelector('[data-view="upload"]');
     var activeAdminView = document.getElementById("view-upload").classList.contains("active") ||
+      document.getElementById("view-builder").classList.contains("active") ||
       document.getElementById("view-people").classList.contains("active");
     if (!isAdmin() && activeAdminView) switchView("search");
 
