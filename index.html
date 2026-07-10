@@ -215,6 +215,29 @@
     .modal{position:absolute;top:0;left:0;width:100%;max-width:none;max-height:none;box-shadow:none;border:none;overflow:visible}
     .close-row{display:none !important}
   }
+
+  .badge-new{background:var(--orange);color:var(--white)}
+  .modal-parent{font-size:.82rem;color:var(--grey);margin:-8px 0 14px}
+  .modal-parent a{color:var(--orange-dark);font-weight:700;text-decoration:none;cursor:pointer}
+  .modal-parent a:hover{text-decoration:underline}
+  .related-sops{margin:0 0 18px;padding:14px 16px;background:var(--cream);border:1px solid rgba(var(--ink-rgb),.12);border-radius:var(--radius-card)}
+  .related-sops h5{margin:0 0 8px;text-transform:uppercase;font-size:.75rem;letter-spacing:.05em;font-weight:800;color:var(--orange-dark)}
+  .related-sops ul{margin:0;padding-left:18px}
+  .related-sops a{color:var(--ink);font-weight:700;text-decoration:none;cursor:pointer}
+  .related-sops a:hover{text-decoration:underline}
+  .ack-box{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 16px;padding:14px 16px;background:var(--warm-grey);border-radius:var(--radius-card)}
+  .ack-status{font-size:.82rem;font-weight:700;color:var(--ink)}
+  .ack-status.done{color:#2f7a3d}
+  .ack-summary{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+  .ack-row{border:1px solid rgba(var(--ink-rgb),.15);border-radius:var(--radius-card);background:var(--white);padding:12px 16px}
+  .ack-row .ack-row-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;cursor:pointer}
+  .ack-row .ack-row-head h4{margin:0;font-size:.95rem}
+  .ack-row .ack-count{font-size:.75rem;font-weight:800;color:var(--orange-dark);background:var(--warm-grey);padding:3px 10px;border-radius:var(--radius-pill);white-space:nowrap}
+  .ack-row .ack-names{margin-top:10px;font-size:.8rem;color:var(--grey);display:none}
+  .ack-row .ack-names.show{display:block}
+  .ack-row .ack-names span{display:inline-block;margin:2px 8px 2px 0}
+  .ack-row .ack-names .missing{color:#8a2f22}
+  #passwordReveal .pw-close{margin-top:12px}
 </style>
 </head>
 <body>
@@ -568,9 +591,11 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
 
       <div class="search-bar">
         <input type="text" id="searchInput" placeholder="Try: cleaning down the bar, fire drill, cashing up..." autocomplete="off">
+        <button type="button" class="wah-button" id="searchBtn">Search</button>
       </div>
       <p class="search-hint">Tip: search by topic, not just the exact policy name — e.g. "closing till" also finds "End of Night Cash Up".</p>
 
+      <div class="chips" id="typeChips"></div>
       <div class="chips" id="categoryChips"></div>
 
       <p class="results-meta" id="resultsMeta"></p>
@@ -592,6 +617,16 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
 
         <label for="up-title">Policy title
           <input type="text" id="up-title" required placeholder="e.g. Shutting Down the Bar">
+        </label>
+
+        <label>Document type
+          <span class="hint">Policies are the overarching rules. SOPs are step-by-step procedures that sit under a parent policy.</span>
+        </label>
+        <div class="chips" id="docTypeChips" style="margin-top:4px"></div>
+
+        <label for="up-parent" id="up-parent-wrap" style="display:none">Parent policy
+          <span class="hint">Which policy does this SOP belong to?</span>
+          <select id="up-parent"><option value="">Select a parent policy…</option></select>
         </label>
 
         <label>Category
@@ -674,6 +709,10 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
 
       <h3 style="margin-top:36px;text-transform:uppercase;font-weight:800;font-size:1.05rem">Current team</h3>
       <div class="people-list" id="peopleList"></div>
+
+      <h3 style="margin-top:36px;text-transform:uppercase;font-weight:800;font-size:1.05rem">Who's confirmed what</h3>
+      <p class="intro" style="margin-bottom:0">Which team members have confirmed they've read each policy or SOP.</p>
+      <div class="ack-summary" id="ackSummary"></div>
     </section>
 
   </div>
@@ -692,7 +731,16 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     <div id="modalCategory" style="display:flex;gap:6px;flex-wrap:wrap"></div>
     <h3 id="modalTitle"></h3>
     <p class="modal-meta" id="modalMeta"></p>
+    <p class="modal-parent" id="modalParentLine" style="display:none"></p>
     <div class="modal-body policy-doc" id="modalBody"></div>
+    <div class="related-sops" id="modalRelatedSops" style="display:none">
+      <h5>Related SOPs</h5>
+      <ul id="modalRelatedSopsList"></ul>
+    </div>
+    <div class="ack-box" id="ackBox" style="display:none">
+      <button type="button" class="wah-button wah-button--small" id="ackBtn">I've read this policy</button>
+      <span id="ackStatus" class="ack-status"></span>
+    </div>
     <div class="close-row">
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <a id="modalFileLink" href="#" target="_blank" rel="noopener" style="display:none" class="wah-button wah-button--secondary wah-button--small">Download attachment</a>
@@ -838,8 +886,14 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
 
   var policies = [];
   var requests = [];
+  var acknowledgments = [];
+  var teamProfiles = [];
   var fuse = null;
   var activeTags = {};
+  var activeTypeFilter = "all";
+  var selectedDocType = "policy";
+  var uploadContentIsExtracted = false;
+  var lastLoginBefore = null;
   var currentProfile = null; // { name, role, must_change_password }
 
   function isAdmin(){ return !!currentProfile && currentProfile.role === "admin"; }
@@ -856,14 +910,23 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
   }
 
   function matchesFilters(p){
+    if (activeTypeFilter !== "all" && (p.doc_type || "policy") !== activeTypeFilter) return false;
     var tagKeys = Object.keys(activeTags).filter(function(k){ return activeTags[k]; });
     return tagKeys.length === 0 || (p.tags || []).some(function(t){ return activeTags[t]; });
+  }
+
+  function isNewSinceLastLogin(p){
+    return !!lastLoginBefore && new Date(p.created_at) > lastLoginBefore;
   }
 
   function searchPolicies(query){
     var pool = policies.filter(matchesFilters);
     if (!query || !query.trim()){
-      return pool.slice().sort(function(a,b){ return new Date(b.created_at) - new Date(a.created_at); });
+      return pool.slice().sort(function(a,b){
+        var an = isNewSinceLastLogin(a), bn = isNewSinceLastLogin(b);
+        if (an !== bn) return an ? -1 : 1;
+        return new Date(b.created_at) - new Date(a.created_at);
+      });
     }
     var localFuse = new Fuse(pool, { keys: FUSE_KEYS, threshold: 0.42, ignoreLocation: true, includeScore: true, minMatchCharLength: 2 });
 
@@ -920,6 +983,21 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     });
   }
 
+  function renderTypeChips(){
+    var el = document.getElementById("typeChips");
+    var opts = [["all","All"],["policy","Policies"],["sop","SOPs"]];
+    el.innerHTML = opts.map(function(o){
+      return '<button class="chip-filter' + (activeTypeFilter === o[0] ? " active" : "") + '" data-type="' + o[0] + '">' + o[1] + '</button>';
+    }).join("");
+    Array.prototype.forEach.call(el.querySelectorAll(".chip-filter"), function(btn){
+      btn.addEventListener("click", function(){
+        activeTypeFilter = btn.getAttribute("data-type");
+        renderTypeChips();
+        runSearch();
+      });
+    });
+  }
+
   function snippet(text, len){
     if (!text) return "";
     var t = text.replace(/\s+/g," ").trim();
@@ -944,8 +1022,10 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
 
     cardsEl.innerHTML = list.map(function(p){
       var tagPills = (p.tags || []).map(function(t){ return '<span class="badge">' + escapeHtml(t) + '</span>'; }).join(" ");
+      var typeBadge = '<span class="badge">' + ((p.doc_type === "sop") ? "SOP" : "Policy") + '</span>';
+      var newBadge = isNewSinceLastLogin(p) ? '<span class="badge badge-new">New</span>' : '';
       return '<div class="card">' +
-        '<div style="display:flex;gap:6px;flex-wrap:wrap">' + (tagPills || '<span class="badge">General</span>') + '</div>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap">' + newBadge + typeBadge + (tagPills || '<span class="badge">General</span>') + '</div>' +
         '<h4>' + escapeHtml(p.title) + '</h4>' +
         '<p class="snippet">' + escapeHtml(snippet(p.content, 150)) + '</p>' +
         '<div class="meta-row"><span>' + formatDate(p.created_at) + '</span>' + (p.file_url ? '<span>📎 attachment</span>' : '') + '</div>' +
@@ -962,7 +1042,7 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
   var BULLET_RE = /^[-*•‣▪]\s+/;
   var NUM_RE = /^\d+[\.\)]\s+/;
 
-  function formatPolicyHtml(text, title){
+  function formatPolicyHtml(text, title, isManual){
     if (!text || !text.trim()) return "";
     var lines = text.replace(/\r\n?/g, "\n").split("\n").map(function(l){ return l.trim(); });
 
@@ -1010,6 +1090,15 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
         continue;
       }
 
+      if (isManual){
+        // Manually typed/pasted text: respect the author's own line breaks as
+        // paragraph breaks instead of reflowing them like extracted PDF text.
+        flush();
+        html.push("<p>" + escapeHtml(line) + "</p>");
+        i++;
+        continue;
+      }
+
       buf.push(line);
       i++;
     }
@@ -1021,11 +1110,23 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     var p = policies.find(function(x){ return String(x.id) === String(id); });
     if (!p) return;
     var catEl = document.getElementById("modalCategory");
-    catEl.innerHTML = (p.tags || []).map(function(t){ return '<span class="badge">' + escapeHtml(t) + '</span>'; }).join(" ") || '<span class="badge">General</span>';
+    var typeBadge = '<span class="badge">' + ((p.doc_type === "sop") ? "SOP" : "Policy") + '</span>';
+    catEl.innerHTML = typeBadge + " " + ((p.tags || []).map(function(t){ return '<span class="badge">' + escapeHtml(t) + '</span>'; }).join(" ") || '<span class="badge">General</span>');
     document.getElementById("modalTitle").textContent = p.title;
     document.getElementById("modalMeta").textContent = "Added " + formatDate(p.created_at) + (p.uploaded_by ? " by " + p.uploaded_by : "");
+
+    var parentLine = document.getElementById("modalParentLine");
+    if (p.doc_type === "sop" && p.parent_policy_id){
+      var parent = policies.find(function(x){ return String(x.id) === String(p.parent_policy_id); });
+      if (parent){
+        parentLine.style.display = "block";
+        parentLine.innerHTML = "Part of: <a id=\"modalParentLink\">" + escapeHtml(parent.title) + "</a>";
+        document.getElementById("modalParentLink").addEventListener("click", function(){ openModal(parent.id); });
+      } else { parentLine.style.display = "none"; }
+    } else { parentLine.style.display = "none"; }
+
     var bodyEl = document.getElementById("modalBody");
-    var formatted = formatPolicyHtml(p.content, p.title);
+    var formatted = formatPolicyHtml(p.content, p.title, p.content_source !== "extracted");
     if (formatted){
       bodyEl.innerHTML = formatted;
     } else if (p.content) {
@@ -1035,6 +1136,22 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     } else {
       bodyEl.innerHTML = '<p style="color:var(--grey);font-style:italic">No text added for this policy yet.</p>';
     }
+
+    var relatedWrap = document.getElementById("modalRelatedSops");
+    var relatedList = document.getElementById("modalRelatedSopsList");
+    if (p.doc_type !== "sop"){
+      var children = policies.filter(function(x){ return x.doc_type === "sop" && String(x.parent_policy_id) === String(p.id); });
+      if (children.length){
+        relatedWrap.style.display = "block";
+        relatedList.innerHTML = children.map(function(ch){
+          return '<li><a data-id="' + escapeHtml(ch.id) + '">' + escapeHtml(ch.title) + '</a></li>';
+        }).join("");
+        Array.prototype.forEach.call(relatedList.querySelectorAll("a"), function(a){
+          a.addEventListener("click", function(){ openModal(a.getAttribute("data-id")); });
+        });
+      } else { relatedWrap.style.display = "none"; }
+    } else { relatedWrap.style.display = "none"; }
+
     var link = document.getElementById("modalFileLink");
     if (p.file_url){ link.style.display = "inline-flex"; link.href = p.file_url; }
     else { link.style.display = "none"; }
@@ -1044,7 +1161,87 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     var reBtn = document.getElementById("modalReextract");
     reBtn.setAttribute("data-id", p.id);
     reBtn.style.display = (isAdmin() && p.file_url) ? "inline-flex" : "none";
+
+    renderAckBox(p.id);
+
     document.getElementById("modalBackdrop").classList.add("show");
+  }
+
+  function renderAckBox(policyId){
+    var box = document.getElementById("ackBox");
+    var statusEl = document.getElementById("ackStatus");
+    var btn = document.getElementById("ackBtn");
+    if (!currentProfile){ box.style.display = "none"; return; }
+    box.style.display = "flex";
+    var mine = acknowledgments.find(function(a){ return String(a.policy_id) === String(policyId) && a.user_name === currentProfile.name; });
+    btn.setAttribute("data-id", policyId);
+    if (mine){
+      btn.style.display = "none";
+      statusEl.textContent = "\u2713 You confirmed you've read this on " + formatDate(mine.acknowledged_at);
+      statusEl.className = "ack-status done";
+    } else {
+      btn.style.display = "inline-flex";
+      btn.disabled = false;
+      btn.textContent = "I've read this policy";
+      statusEl.textContent = "";
+      statusEl.className = "ack-status";
+    }
+  }
+
+  async function acknowledgeCurrentPolicy(){
+    var btn = document.getElementById("ackBtn");
+    var policyId = btn.getAttribute("data-id");
+    if (!policyId || !currentProfile) return;
+    btn.disabled = true;
+    btn.textContent = "Saving…";
+    try{
+      var userRes = await sb.auth.getUser();
+      var uid = userRes.data && userRes.data.user ? userRes.data.user.id : null;
+      if (!uid) throw new Error("Your session has expired — please log in again.");
+      var res = await sb.from("policy_hub_acknowledgments").upsert({
+        policy_id: policyId, user_id: uid, user_name: currentProfile.name, acknowledged_at: new Date().toISOString()
+      }, { onConflict: "policy_id,user_id" });
+      if (res.error) throw res.error;
+      await loadAcknowledgments();
+      renderAckBox(policyId);
+    }catch(err){
+      alert("Couldn't save your confirmation: " + (err && err.message ? err.message : err));
+      btn.disabled = false;
+      btn.textContent = "I've read this policy";
+    }
+  }
+
+  function renderAckSummary(){
+    var el = document.getElementById("ackSummary");
+    if (!el) return;
+    var totalCount = teamProfiles.length;
+    var relevant = policies.slice().sort(function(a,b){ return new Date(b.created_at) - new Date(a.created_at); });
+    if (!relevant.length){ el.innerHTML = '<div class="empty-state">No policies yet.</div>'; return; }
+    el.innerHTML = relevant.map(function(p){
+      var acked = acknowledgments.filter(function(a){ return String(a.policy_id) === String(p.id); });
+      var ackedMap = {};
+      acked.forEach(function(a){ ackedMap[a.user_name] = a.acknowledged_at; });
+      var namesHtml = teamProfiles.map(function(person){
+        var when = ackedMap[person.name];
+        return when
+          ? "<span>\u2713 " + escapeHtml(person.name) + " (" + formatDate(when) + ")</span>"
+          : '<span class="missing">\u2717 ' + escapeHtml(person.name) + '</span>';
+      }).join("");
+      return '<div class="ack-row">' +
+        '<div class="ack-row-head" data-id="' + escapeHtml(p.id) + '">' +
+          '<h4>' + escapeHtml(p.title) + ' <span style="font-weight:400;color:var(--grey);font-size:.78rem">(' + ((p.doc_type === "sop") ? "SOP" : "Policy") + ')</span></h4>' +
+          '<span class="ack-count">' + acked.length + ' / ' + totalCount + ' confirmed</span>' +
+        '</div>' +
+        '<div class="ack-names" id="ack-names-' + escapeHtml(p.id) + '">' + (namesHtml || '<span class="empty-state">No team members yet.</span>') + '</div>' +
+      '</div>';
+    }).join("");
+
+    Array.prototype.forEach.call(el.querySelectorAll(".ack-row-head"), function(head){
+      head.addEventListener("click", function(){
+        var namesEl = document.getElementById("ack-names-" + head.getAttribute("data-id"));
+        namesEl.classList.toggle("show");
+      });
+    });
   }
 
   async function reextractFromModal(){
@@ -1071,7 +1268,7 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
         alert("Couldn't find any text in that file — it may be a scanned image. Paste the text in manually instead.");
         return;
       }
-      var upd = await sb.from("policies").update({ content: text, updated_at: new Date().toISOString() }).eq("id", id);
+      var upd = await sb.from("policies").update({ content: text, content_source: "extracted", updated_at: new Date().toISOString() }).eq("id", id);
       if (upd.error) throw upd.error;
       await loadPolicies();
       openModal(id);
@@ -1159,12 +1356,19 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     policies = res.data || [];
     buildIndex();
     runSearch();
+    populateParentPicker();
   }
 
   async function loadRequests(){
     var res = await sb.from("policy_requests").select("*").order("created_at", { ascending: false });
     requests = res.data || [];
     renderRequests();
+  }
+
+  async function loadAcknowledgments(){
+    var res = await sb.from("policy_hub_acknowledgments").select("*");
+    acknowledgments = res.data || [];
+    if (isAdmin()) renderAckSummary();
   }
 
   // ---- Views / tabs ----
@@ -1236,6 +1440,8 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     var titleEl = document.getElementById("up-title");
     var submitBtn = document.getElementById("uploadSubmitBtn");
 
+    contentEl.addEventListener("input", function(){ uploadContentIsExtracted = false; });
+
     fileInput.addEventListener("change", async function(){
       var file = fileInput.files && fileInput.files[0];
       if (!file){ statusEl.textContent = ""; return; }
@@ -1268,7 +1474,7 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
           if (contentEl.value.trim()){
             replace = confirm("Replace the existing text in the box below with text extracted from this file?");
           }
-          if (replace) contentEl.value = text;
+          if (replace){ contentEl.value = text; uploadContentIsExtracted = true; }
           statusEl.textContent = "Extracted " + text.length.toLocaleString() + " characters — check it below before saving.";
         }
       }catch(err){
@@ -1312,8 +1518,36 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     });
   }
 
+  function renderDocTypeChips(){
+    var el = document.getElementById("docTypeChips");
+    var opts = [["policy","Policy"],["sop","SOP"]];
+    el.innerHTML = opts.map(function(o){
+      return '<button type="button" class="chip-filter' + (selectedDocType === o[0] ? " active" : "") + '" data-doctype="' + o[0] + '">' + o[1] + '</button>';
+    }).join("");
+    Array.prototype.forEach.call(el.querySelectorAll(".chip-filter"), function(btn){
+      btn.addEventListener("click", function(){
+        selectedDocType = btn.getAttribute("data-doctype");
+        renderDocTypeChips();
+        document.getElementById("up-parent-wrap").style.display = (selectedDocType === "sop") ? "block" : "none";
+        if (selectedDocType === "sop") populateParentPicker();
+      });
+    });
+  }
+
+  function populateParentPicker(){
+    var sel = document.getElementById("up-parent");
+    if (!sel) return;
+    var current = sel.value;
+    var parents = policies.filter(function(p){ return p.doc_type !== "sop"; }).slice().sort(function(a,b){ return a.title.localeCompare(b.title); });
+    sel.innerHTML = '<option value="">Select a parent policy…</option>' + parents.map(function(p){
+      return '<option value="' + escapeHtml(p.id) + '">' + escapeHtml(p.title) + '</option>';
+    }).join("");
+    if (current && parents.some(function(p){ return String(p.id) === String(current); })) sel.value = current;
+  }
+
   function initForms(){
     renderTagPicker();
+    renderDocTypeChips();
 
     document.getElementById("uploadForm").addEventListener("submit", async function(e){
       e.preventDefault();
@@ -1330,6 +1564,7 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
         var fileInfo = null;
         if (hasFile){ fileInfo = await uploadFile(fileInput.files[0]); }
         var chosenTags = Object.keys(selectedUploadTags).filter(function(t){ return selectedUploadTags[t]; });
+        var parentId = (selectedDocType === "sop") ? (document.getElementById("up-parent").value || null) : null;
         var payload = {
           title: document.getElementById("up-title").value.trim(),
           tags: chosenTags,
@@ -1338,7 +1573,10 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
           uploaded_by: currentProfile ? currentProfile.name : null,
           file_name: fileInfo ? fileInfo.name : null,
           file_path: fileInfo ? fileInfo.path : null,
-          file_url: fileInfo ? fileInfo.url : null
+          file_url: fileInfo ? fileInfo.url : null,
+          doc_type: selectedDocType,
+          parent_policy_id: parentId,
+          content_source: uploadContentIsExtracted ? "extracted" : "manual"
         };
         var res = await sb.from("policies").insert(payload);
         if (res.error) throw res.error;
@@ -1347,6 +1585,10 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
         document.getElementById("pdfStatus").textContent = "";
         selectedUploadTags = {};
         renderTagPicker();
+        selectedDocType = "policy";
+        renderDocTypeChips();
+        document.getElementById("up-parent-wrap").style.display = "none";
+        uploadContentIsExtracted = false;
         await loadPolicies();
         setTimeout(function(){ switchView("search"); }, 700);
       }catch(err){
@@ -1442,8 +1684,13 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
       document.getElementById("view-people").classList.contains("active");
     if (!isAdmin() && activeAdminView) switchView("search");
 
-    await Promise.all([loadPolicies(), loadRequests()]);
+    await Promise.all([loadPolicies(), loadRequests(), loadAcknowledgments()]);
     if (isAdmin()) loadPeople();
+
+    var userRes2 = await sb.auth.getUser();
+    if (userRes2.data && userRes2.data.user){
+      sb.from("policy_hub_profiles").update({ last_login_at: new Date().toISOString() }).eq("id", userRes2.data.user.id).then(function(){});
+    }
   }
 
   async function loadProfileAndEnter(){
@@ -1451,7 +1698,7 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     var user = userRes.data && userRes.data.user;
     if (!user){ showLoginScreen(); return; }
 
-    var res = await sb.from("policy_hub_profiles").select("name,role,must_change_password").eq("id", user.id).single();
+    var res = await sb.from("policy_hub_profiles").select("name,role,must_change_password,last_login_at").eq("id", user.id).single();
     if (res.error || !res.data){
       // no profile row somehow - sign them back out rather than get stuck
       await sb.auth.signOut();
@@ -1459,6 +1706,7 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
       return;
     }
     currentProfile = res.data;
+    lastLoginBefore = res.data.last_login_at ? new Date(res.data.last_login_at) : null;
     if (currentProfile.must_change_password){ showForceScreen(); }
     else { await enterApp(); }
   }
@@ -1544,6 +1792,7 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
   async function loadPeople(){
     var res = await sb.from("policy_hub_profiles").select("id,name,role,must_change_password").order("name");
     var list = res.data || [];
+    teamProfiles = list;
     var el = document.getElementById("peopleList");
     el.innerHTML = list.map(function(p){
       var isSelf = currentProfile && p.name === currentProfile.name;
@@ -1560,6 +1809,8 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     Array.prototype.forEach.call(el.querySelectorAll(".remove-person-btn"), function(btn){
       btn.addEventListener("click", function(){ removePerson(btn.getAttribute("data-id"), btn.getAttribute("data-name")); });
     });
+
+    renderAckSummary();
   }
 
   async function removePerson(userId, name){
@@ -1609,7 +1860,9 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
         showToast("peopleToast", "Account created for " + out.name + ".", true);
         revealEl.style.display = "block";
         revealEl.innerHTML = "One-time password for <strong>" + escapeHtml(out.name) + "</strong> — share this with them now, it won't be shown again:<br>" +
-          "<code>" + escapeHtml(out.password) + "</code><br>They'll be asked to set their own password the first time they log in.";
+          "<code>" + escapeHtml(out.password) + "</code><br>They'll be asked to set their own password the first time they log in." +
+          '<div class="pw-close"><button type="button" class="wah-button wah-button--secondary wah-button--small" id="pwRevealClose">Got it, done</button></div>';
+        document.getElementById("pwRevealClose").addEventListener("click", function(){ revealEl.style.display = "none"; revealEl.innerHTML = ""; });
         document.getElementById("peopleForm").reset();
         await loadPeople();
       }catch(err){
@@ -1626,6 +1879,9 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
       btn.addEventListener("click", function(){ switchView(btn.getAttribute("data-view")); });
     });
     document.getElementById("searchInput").addEventListener("input", runSearch);
+    document.getElementById("searchBtn").addEventListener("click", runSearch);
+    document.getElementById("searchInput").addEventListener("keydown", function(e){ if (e.key === "Enter"){ e.preventDefault(); runSearch(); } });
+    document.getElementById("ackBtn").addEventListener("click", acknowledgeCurrentPolicy);
     document.getElementById("modalClose").addEventListener("click", closeModal);
     document.getElementById("modalDelete").addEventListener("click", deletePolicyFromModal);
     document.getElementById("modalReextract").addEventListener("click", reextractFromModal);
@@ -1636,6 +1892,7 @@ avyDTMD9DlphRjE+ZOGCqaO75qd2ZsK06bru/wNX5AMeQiCG7AAAAABJRU5ErkJggg==" alt="Whata
     document.addEventListener("keydown", function(e){ if (e.key === "Escape") closeModal(); });
 
     renderCategoryChips();
+    renderTypeChips();
     initForms();
     initPdfHandling();
     initAuthForms();
